@@ -4,6 +4,7 @@
 %{
 
 #include "calc.h"
+#include "script.h"
 
 %}
 
@@ -16,9 +17,15 @@
 %token <y_sym>   I
 %token <y_num>   NUMBER
 %token <y_sym>   VAR BLTIN UNDEF
+%token <y_sym>   GR
+%token <y_sym>   GS
+%token <y_sym>   GN
 %type  <y_datum> expr
 %type  <y_datum> asgn
 %type  <y_datum> fxn
+%type  <y_datum> gr
+%type  <y_datum> gs
+%type  <y_datum> gn
 %type  <y_datum> coord
 %type  <y_datum> coord_list
 %right '='
@@ -42,13 +49,31 @@ list:	/* empty */
 		print_dat($2);
 		free_dat($2);
 	    }
+	| list gs eos {
+		plot_dat($2,0);
+		free_dat($2);
+	    }
+	| list gr eos {
+		plot_dat($2,1);
+		free_dat($2);
+	    }
+	| list gn eos {
+		plot_dat($2,2);
+		free_dat($2);
+	    }
 	| list error eos	{ yyerrok; }
 	;
 
+gs:	GS expr	{ $$ = $2; }
+
+gr:	GR expr	{ $$ = $2; }
+
+gn:	GN expr	{ $$ = $2; }
+
 fxn:    VAR '(' expr ')' {
-                          $$ = interp($1->u.val, $3);
-			  free($3);
-			}
+	      $$ = interp($1->u.val, $3);
+	      free($3);
+	    }
 
 asgn:   VAR '=' expr     { 
 			    free($1->u.val);	/* remove old value */
@@ -67,6 +92,8 @@ expr:	NUMBER 		{ $$ = new_dat((double) $1,0.0); }
 			  $$ = dup_dat($1->u.val);
 			}
 	| asgn
+	| BLTIN '(' expr ',' expr ')' { $$ = (*($1->u.ptr))($3,$5); 
+	                       free_dat($3); }
 	| BLTIN '(' expr ')' { $$ = (*($1->u.ptr))($3); 
 	                       free_dat($3); }
 	| '+' expr %prec UNARYPLUS {
@@ -75,22 +102,22 @@ expr:	NUMBER 		{ $$ = new_dat((double) $1,0.0); }
 	| '-' expr %prec UNARYMINUS {
 		DATUM *pp;
 		pp = new_dat(0.0, 0.0);
-		$$ = m_minus(pp,$2); 
+		$$ = binary(SUB,pp,$2); 
 		free_dat($2);
 		free_dat(pp);
 	    }
         | expr '+' expr { 
-		    $$ = m_plus($1,$3);
+		    $$ = binary(ADD, $1,$3);
 		    free_dat($1);
 		    free_dat($3);
 		}
 	| expr '-' expr {
-		    $$ = m_minus($1,$3); 
+		    $$ = binary(SUB,$1,$3); 
 		    free_dat($1);
 		    free_dat($3);
 		}
 	| expr '*' expr { 
-		    $$ = m_mult($1,$3); 
+		    $$ = binary(MULT,$1,$3); 
 		    free_dat($1);
 		    free_dat($3);
 		}
@@ -101,12 +128,12 @@ expr:	NUMBER 		{ $$ = new_dat((double) $1,0.0); }
 			free_dat($3);
 		        execerror("division by zero", "");
 		    }
-		    $$ = m_div($1,$3); 
+		    $$ = binary(DIV,$1,$3); 
 		    free_dat($1);
 		    free_dat($3);
 		}
 	| expr '^' expr { 
-		    $$ = Pow($1, $3);
+		    $$ = binary(POW, $1, $3);
 		    free_dat($1);
 		    free_dat($3);
 	            }
@@ -251,12 +278,53 @@ int yylex()
 
     if (c == EOF)
     	return 0;
+
     if (c == '.'  || isdigit(c)) {	/* number */
-        rl_ungetc(c,fin);
-	yylval.y_num = getdouble(fin); 
-	/* scanf("%lf", &yylval.y_num); */
-	return(NUMBER);
+	double d;
+	rl_ungetc(c,fin);
+
+	/* printf("calling getdouble()..."); */
+	d = getdouble(fin); 
+	/* printf("returned with %e\n",d); */
+
+	/************ Engineering Notation <RCW> 10/1/93 **********/
+	switch(c=rlgetc(fin)) {
+	    case 'A':
+	    case 'a': d*=1e-18; break;
+	    case 'F':
+	    case 'f': d*=1e-15; break;
+	    case 'P':
+	    case 'p': d*=1e-12; break;
+	    case 'N':
+	    case 'n': d*=1e-9;  break;
+	    case 'U':
+	    case 'u': d*=1e-6;  break;
+	    case 'M':
+	    case 'm': 
+		if((c=rlgetc(fin)) == 'e' || c == 'E') {
+		    if((c=rlgetc(fin)) == 'g' || c == 'G') {
+			d*=1e6;
+		    } else {
+			execerror("bad engineering notation", (char *)0);
+		    }		
+		} else {
+		    rl_ungetc(c,fin);
+		    d*=1e-3; 
+		}
+		break;
+	    case 'K':
+	    case 'k': d*=1e3;  break;
+	    case 'G':
+	    case 'g': d*=1e9;  break;
+	    case 'T':
+	    case 't': d*=1e12;  break;
+	    default: rl_ungetc(c,fin);
+	}
+	/************************************************************/
+	yylval.y_num = d; 
+	return NUMBER;
     }
+
     if (isalpha(c)) {
         Symbol *s;
 	char sbuf[100], *p = sbuf;
