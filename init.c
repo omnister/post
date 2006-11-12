@@ -19,6 +19,7 @@ static struct {
     {"ci",      CI},	/* load in a rawfile */
     {"di",      DI},	/* display loaded sig names */
     {"ls",      LS},	/* list loadable rawfiles in cwd */
+    {"pr",      PR},	/* print variable */
     {0,		0}
 };
 
@@ -40,8 +41,9 @@ static struct {	    /* constants */
     {"PI",	3.14159265358979323846,0.0},
     {"E",	2.71828182845904523536,0.0},
     {"GAMMA",	0.57721566490153286060,0.0}, /* Euler */
-    {"DEG",     57.29577951308232087680,0.0}, /* deg/radian */
+    {"DEG",     57.29577951308232087680,0.0},/* deg/radian */
     {"PHI",	1.61803398874989484820,0.0}, /* golden ratio */
+    {"DT",	1e-6,0.0}, 		     /* default integration delta */
     {0,		0.0, 0.0}
 };
 
@@ -53,11 +55,14 @@ static struct {	    /* built-ins */
 } builtins[] = {
     {"avg",	   Avg},	/* binop */
     {"db",	   Db},
+    {"dt", 	   dt},
     {"exp",	   Exp},
     {"im",	   Im},
     {"integral",  Integral},
     {"pha",	   Pha},
-    {"log",	   Log},
+    {"ln",	   Ln},
+    {"log10",	   Log10},
+    {"log",	   Log10},
     {"re",	   Re},
     {"mag",	   Mag},	/* binop */
     {"min", 	   Min},	/* binop */

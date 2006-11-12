@@ -1,0 +1,214 @@
+
+For a quick start, type "make depend" and then "make".  If you like
+what you see, then run "make install" with sufficient permission to
+write in "/usr/local/bin".
+
+Post does it's graphing with autoplot() which you will need to install
+first.
+
+Run post with "post".  You'll get a ":" prompt in your terminal window.
+There should be command line editing available.  I think emacs is the
+default, I switch it to "vi" mode by having a .inputrc file in my home
+directory which contains:
+
+    -------------- cut here ---------------
+    # this is the gnu-readline configuration file
+
+    set editing-mode vi
+    set keymap vi
+    -------------- cut here ---------------
+
+If you have written some nice waveform definitions for post you can
+put them in file and load them at start up time with "post mydefs -".  Post
+will load all listed files into memory.  The final "-" drops you into
+interactive mode after loading everything.
+
+Of course, the most important feature is loading spice raw files.
+You can get a list of loadable spice raw files with "ls".
+
+You can load a rawfile with 
+
+	: ci "file"
+
+The filename must be in quotes.  You can list the loaded variables
+with "di".
+
+Expressions are fairly obvious, read below for details.  You can 
+graph an expression with "gr" (graph on new plot), "gs" (graph on same plot)
+and "gn" (graph on same plot, but new scale).  Commands can be terminated
+with either ";" or a new line, so you can do things like:
+
+	: gr a; gs b; gn c; gs d
+
+To make a graph with a,b on the top axis and c,d on the bottom.
+
+Piecewise linear (PWL) variables can be treated like normal scalars. 
+Generally post will do the obvious, most useful thing.  Adding two PWLs
+with 
+   	: c=a+b
+
+will add them point by point, cross-interpolating where necessary.
+
+The output PWL is defined only at the intersection of the of the
+span of each PWL's independant variable.  For instance, you can
+define two PWL's with
+
+	: a = {0,0 1,1}
+	: b = {0.5,1 1.5,2}
+
+and the addition of a,b yields
+
+	: pr a+b
+	    {
+		0.5,1
+		1,1.5
+	    }
+		
+Which is only defined over the overlap of a,b.
+
+There is one fundamental data type in post().  This is the DATUM which
+is defined as:
+
+	typedef struct datum {
+	     double iv;		/* independant variable, usually time or freq */
+	     double re;		/* real part */
+	     double im;		/* imaginary part */
+	     struct datum *next;
+	     struct datum *prev;
+	} DATUM
+
+Simple scalars like "0.0", "1+2i", "-4i" are just DATUMS with *next pointing to
+NULL.  A piece-wise linear (PWL) such as "a = {0,0 1,1 2,i}" is implemented
+as a doubly-linked list of datums defined in such a way that appending new items
+is fast.
+
+In the summaries below, a single scalar is notated as "d" and a PWL list
+is notated as "p".
+
+In general, when a math operation is performed on two PWLs, the operation
+is done point by point with cross interpolation whenever the two PWLs differ
+in their independant variables.  A math operation between a PWL and a scalar
+DATUM generally takes the DATUM value as applying over all time or frequency.
+
+Operations between two scalar DATUMs is just the ordinary math that one
+would expect.
+
+In cases where complex definitions are awkward, the real value is used.  An
+example is the max(p1,p2) function.  In most cases, it is expected that it
+is the maximum real value that is compared.  Although only the real value
+is compared, the entire complex value of the maximum segment is copied to
+the output.  This allows the max/min functions to be used as a multiplexer.
+
+As implemented, a PWL can be thought of as both a data-type and a function.
+if a is defined as "{0,0 1,1 2,i}"  then a(sqrt(2)) will return 2.0.  This
+functional notation replaces the yvalue() function of HP's post.
+
+# AVERAGE 
+
+    p3=avg(p1,p2)	;p3(k) = (p1(k)+p2(k))/2
+    d3=avg(d1,d2)	;d3 = (d1+d2)/2
+    p3=avg(d1,p1)	;p3(k) = (p1(k)+d1)/2
+    p3=avg(p1,d1)	;p3(k) = (p1(k)+d1)/2
+    d=avg(p)		;compute average value of a single PWL
+
+# DECIBAL
+
+    p=db(p)		;return 20*log10(mag(p))
+    d=db(d)		;return 20*log10(mag(d))
+
+# DERIVATIVE
+
+    p2=dt(p1)		;uses global variable DT, default = 1u
+			;p2 = (warp(p1,-DT/2)-warp(p1,DT/2))/DT
+# EXPONENTIAL 
+    
+    p2=exp(p1) 	        ;p2(k) = e^p1(k)
+
+# INTEGRAL
+
+    p2=integral(p1)   	;return the running integral of p1*dt
+                        ;definite integral from a to b = p2(b)-p2(a)
+
+# LOGARITHM
+
+    p2=ln(p1)		;p2(k) = ln(p1(k))
+    p2=log10(p1)	;p2(k) = ln(p1(k))/ln(10)
+    p2=log(p1)		;p2(k) = ln(p1(k))/ln(10)
+
+# MAGNITUDE
+
+    p2=mag(p1)	        ;p2(k) = sqrt( (p1(k).re)^2 + (p1(k).im)^2 )		
+
+# MAXIMUM/MINIMUM
+
+    p3=max(p1,p2)	;p3 = (p1(k).re > p2(k).re)?p1(k):p2(k)
+    d=max(p1)		;find k where p1(k).re is maximum, return p1(k)
+    			;note: decision is made on real value, but 
+			;complex value is returned.
+
+    min(p1,p2)	        ;p3 = (p1(k).re < p2(k).re)?p1(k):p2(k)
+    d=min(p1)		;find k where p1(k).re is minimum, return p1(k)
+    			;note: decision is made on real value, but 
+			;complex value is returned.
+
+# PHASE
+
+    p2=pha(p)		;p2(k) = atan2(p(k).im, p(k).re)
+    d2=pha(d)		;d2 = atan2(d.im, d.re)
+
+# POWER
+
+    p3=pow(p1,p2)	;p3(k) = p1(k)^p2(k)
+    p3=pow(p1,d2)	;p3(k) = p1(k)^d
+    d=pow(d1,d2)	;d = d1^d2
+
+    p3=p1^p2		;alternative ways of computing a^b
+    d3=d1^d2
+    d3=p1^d1
+
+
+# PRINT
+    
+    pr <exp>		;print the value of expression
+
+# PLOT
+
+    gr <exp>		;graph an expression on a new graph
+    gs <exp>		;graph on the same graph
+    gn <exp>		;graph on next y-graph
+
+    			;for example you can graph a,b on top
+			;plot and d,c on bottom plot with
+			;  "gr a; gs b; gn c; gs d"
+
+# REAL/IMAGINARY PART
+
+    p2=re(p1)		;p2(k) = p1(k).re
+    d2=re(d)		;d2 = d.re
+
+    p2=im(p1)		;p2(k) = imaginary part of p1(k)
+    d2=im(d)		;d2 = d.im
+
+# SPICE RAW FILES
+
+    ls			; list all raw files in the current directory
+    ci "file"		; load the raw file "file". Quotes are required
+    di			; display the names of all loaded variables
+
+# SQUARE ROOT
+    p2=sqrt(p1)		; same as pow(p,0.5)
+
+# TIME DELAY
+    p3=warp(p1,p2)	; p3(k+p1(k).re) = p1(k)
+    p3=warp(p1,d)	; p3(k+d) = p1(k)
+
+# ZERO CROSSING MEASUREMENT
+
+    p3=xcross(p1,p2)
+    p3=xcrossp(p1,p2)
+    p3=xcrossn(p1,p2)	; let n=(int)p2.re, find nth zero crossing (xcross), nth
+    			; negative-going zero crossing (xcrossn), or nth positive
+			; going zero crossing (xcrossp) of p1(xc).re.
+			; set p3.re=xc.  If n==0, return all zero
+			; crossings as a PWL with iv set to n, .re set to crossing
+			; time.  Can then extract nth crossing with p3(n).

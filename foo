@@ -1,3 +1,7 @@
+
+/* you can include this file, and then drop into */
+/* command line mode by running "post foo -" */
+
 b={1,0 2,3 3,0 4,-1 5,8}	/* define b */
 
 c= {1,1 2,2 3,3			/* demonstrate line wrapping */

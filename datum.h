@@ -34,13 +34,15 @@ DATUM *  xcrossn(DATUM *a, DATUM *b);
 /* unaries -- second arg is for error checking */
 /* should be passed as NULL */
 
+DATUM *       dt(DATUM *a, DATUM *b);
 DATUM *       Db(DATUM *a, DATUM *b);
 DATUM *      Exp(DATUM *a, DATUM *b);
 DATUM *       Im(DATUM *a, DATUM *b);
 DATUM *      Mag(DATUM *a, DATUM *b);
 DATUM *      Pha(DATUM *a, DATUM *b);
 DATUM *       Re(DATUM *a, DATUM *b);
-DATUM *      Log(DATUM *a, DATUM *b);
+DATUM *       Ln(DATUM *a, DATUM *b);
+DATUM *    Log10(DATUM *a, DATUM *b);
 DATUM *     Sqrt(DATUM *a, DATUM *b);
 DATUM * Integral(DATUM *a, DATUM *b);
 
