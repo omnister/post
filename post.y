@@ -345,7 +345,8 @@ int yylex()
 	d = getdouble(fin); 
 	/* printf("returned with %e\n",d); */
 
-	/************ Engineering Notation <RCW> 10/1/93 **********/
+	/************ Engineering Suffixes Notation <RCW> 10/1/93 **********/
+	/************ added percent 11/12/06 *******************************/
 	switch(c=rlgetc(fin)) {
 	    case 'A':
 	    case 'a': d*=1e-18; break;
@@ -357,6 +358,7 @@ int yylex()
 	    case 'n': d*=1e-9;  break;
 	    case 'U':
 	    case 'u': d*=1e-6;  break;
+	    case '%': d/=100.0; break;
 	    case 'M':
 	    case 'm': 
 		if((c=rlgetc(fin)) == 'e' || c == 'E') {
