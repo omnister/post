@@ -22,6 +22,13 @@ extern  void initcode();
 extern  void init();
 extern  void execute();
 
+extern void graphinit();
+extern void graphnext();
+extern void graphexpr(DATUM *d);
+extern void graphxl(double xlmin, double xlmax);
+extern void graphyl(double ylmin, double ylmax);
+extern void graphprint();
+
 char    *rl_gets();
 int     rlgetc();
 int     rl_ungetc();

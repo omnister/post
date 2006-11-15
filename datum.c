@@ -1,9 +1,9 @@
 #include "datum.h"
-#include "script.h"
 #include "symbol.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h> 	/* for sleep() */
 
 static int mem_use=0;
 static int debug=0;
@@ -616,49 +616,6 @@ int readnext( DATUM **list, DATUM *datumold, DATUM *datum) {
     return(1);
 }
 
-void plot_dat(DATUM *p, int mode) {
-
-    DATUM *pd;
-    char buf[128];
-
-    switch(mode) {
-        case 0:
-	    if (scriptopen("/usr/local/bin/ap", "-n") == 0) { 
-	       printf("can't open autoplot!\n");
-	       return;
-	    }
-	    break;
-    	case 1:
-	    if (scriptopen("/usr/local/bin/ap", NULL) == 0) { 
-	       printf("can't open autoplot!\n");
-	       return;
-	    } 
-	    break;
-	case 2:
-	    if (scriptopen("/usr/local/bin/ap", "-n") == 0) { 
-	       printf("can't open autoplot!\n");
-	       return;
-	    }
-            scriptfeed("nextygraph\n");
-	    break;
-	default:
-	    printf("bad plot_dat parameter: %d\n", mode);
-	    break;
-    }
-    
-    if (p == NULL) {
-       printf("undefined variable!\n");
-       return;
-    }
-
-    for (pd=p; pd!=NULL; pd=pd->next) {
-       sprintf(buf, "%g %g\n", pd->iv, pd->re);
-       scriptfeed(buf);
-    }
-    scriptread(buf, 0, 1);
-    scriptclose();
-}
-
 
 /* ------------------------------------------------------------ */
 
@@ -1166,4 +1123,14 @@ DATUM * dt(DATUM *a, DATUM *b) {
     free_dat(e);
 
     return(c);
+}
+
+DATUM * dopause(DATUM *a, DATUM *b) {		/* ansi already has a pause() command */
+
+    if (b != NULL) {
+       printf("function takes only one argument!\n");
+       return(NULL);
+    }
+
+    return(new_dat((double) sleep((int) a->re) ,0.0));
 }

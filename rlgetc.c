@@ -107,7 +107,7 @@ char *prompt;
 void rl_init()
 {
     /* Allow conditional parsing of the ~/.inputrc file. */
-    rl_readline_name = ".hocrc";
+    rl_readline_name = ".postrc";
 }
 
 

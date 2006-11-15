@@ -19,6 +19,8 @@ DATUM * dup_dat(DATUM *p);	/* copy a DATUM */
 DATUM * link_dat();
 DATUM * interp();
 
+DATUM * dopause();
+
 /* binaries */
 
 DATUM *  binary(BINOP operation, DATUM *a, DATUM *b);

@@ -5,6 +5,7 @@
 
 #include "post.h"
 #include "script.h"
+#define YYDEBUG 1
 
 %}
 
@@ -20,14 +21,16 @@
 %token <y_sym>   GR
 %token <y_sym>   GS
 %token <y_sym>   GN
+%token <y_sym>   XL
+%token <y_sym>   YL
 %token <y_sym>   LS 
 %token <y_sym>   PR
 %token <y_sym>   CI
 %token <y_sym>   DI 
+%token <y_sym>   QUIT 
 %type  <y_datum> expr
 %type  <y_datum> asgn
 %type  <y_datum> fxn
-%type  <y_datum> gr
 %type  <y_datum> gs
 %type  <y_datum> gn
 %type  <y_datum> pr 
@@ -53,17 +56,7 @@ list:	/* empty */
 		print_dat($2);
 		free_dat($2);
 	    }
-	| list gs eos {
-		plot_dat($2,0);
-		free_dat($2);
-	    }
 	| list gr eos {
-		plot_dat($2,1);
-		free_dat($2);
-	    }
-	| list gn eos {
-		plot_dat($2,2);
-		free_dat($2);
 	    }
 	| list LS eos {
 		ls();
@@ -72,17 +65,61 @@ list:	/* empty */
 		printf("loading %s\n", (char *) $3);
 		com_ci((char *) $3);
 	    }
+	| list QUIT eos {
+		exit(1);
+	    }
 	| list DI eos {
 		symprint();
 	    }
-	| list error eos	{ yyerrok; }
+	| list error eos {
+		yyclearin;
+		yyerrok; 
+	    }
 	;
+
+/****************************************/
+
+gr: 	   XX plotlist { 
+		graphprint(0);
+	     };
+
+XX:        GR {
+                graphinit();
+             };
+
+plotlist:  plotspec {};
+	   | plotlist plotsep plotspec {};
+	   ;
+
+plotsep:  ':' {
+		graphnext();
+             };
+
+plotspec:  /* empty */ { };
+   	   | plotspec expr {
+	   	graphexpr($2);
+		free_dat($2);
+	      };
+   	   | plotspec xl;
+	   | plotspec yl;
+	   ;
+
+xl:	   XL expr expr {
+		graphxl($2->re, $3->re);
+	        free_dat($2);
+	        free_dat($3);
+             };
+yl:	   YL expr expr { 
+		graphyl($2->re, $3->re);
+	        free_dat($2);
+	        free_dat($3);
+	     };
+
+/****************************************/
 
 pr:	PR expr	{ $$ = $2; }
 
 gs:	GS expr	{ $$ = $2; }
-
-gr:	GR expr	{ $$ = $2; }
 
 gn:	GN expr	{ $$ = $2; }
 
@@ -91,12 +128,12 @@ fxn:    VAR '(' expr ')' {
 	      free($3);
 	    }
 
-asgn:   VAR '=' expr     { 
-			    free($1->u.val);	/* remove old value */
-			    $1->u.val = $3; 	/* install new value */
-			    $1->type = VAR;
-			    $$ = dup_dat($3);	/* put a copy on stack */
-			}
+asgn:   VAR '=' expr    { 
+		free($1->u.val);	/* remove old value */
+		$1->u.val = $3; 	/* install new value */
+		$1->type = VAR;
+		$$ = dup_dat($3);	/* put a copy on stack */
+	    }
         ;
 
 expr:	NUMBER 		{ $$ = new_dat((double) $1,0.0); }
@@ -157,12 +194,8 @@ expr:	NUMBER 		{ $$ = new_dat((double) $1,0.0); }
 	;
 
 
-coord	:  NUMBER ',' expr {
-		$3->iv = $1;
-		$$ = $3;
-		}
-	|  NUMBER ',' expr eos {
-		$3->iv = $1;
+coord	:  expr ',' expr {
+		$3->iv = $1->re;
 		$$ = $3;
 		}
 	;
@@ -179,12 +212,15 @@ eos:    '\n'
         ;
 %%
 
+#define _GNU_SOURCE
+#include <string.h>	/* for strsignal() */
 #include <math.h>
 #include <stdio.h>
 #include <ctype.h>
 #include "rlgetc.h"
 #include <signal.h>
 
+#define MAXSIGNAL 31	/* biggest signal under linux */
 #include <setjmp.h>
 jmp_buf begin;
 
@@ -202,12 +238,35 @@ double  getdouble();
 int	c;	    /* global for use by warning() */
 int     yyparse();
 
+void sighandler(x)
+int x;
+{
+    static int last=-1;
+    extern char *strsignal();
+
+    /* printf("caught %s. Use \"quit\" to end program", strsignal(x)); */
+
+    if (x == 3) {
+       if (last==x) {
+            exit(0);
+       } else {
+            printf(": do it again and I'll die!\n");
+       }
+    }
+    last = x;
+}
+
 int main(argc, argv)    /* hoc 6 */
 char *argv[];
 {
     void fpecatch();
     void run();
+    void sighandler();
     int moreinput();
+    int err=0;
+
+    extern int yydebug;
+    yydebug = 0;
 
     rl_init();	/* Bind our completer. */
 
@@ -219,6 +278,18 @@ char *argv[];
     } else {
 	gargv = argv+1;
 	gargc = argc-1;
+    }
+
+    /* set up to catch all signal */
+    /* for (i=1; i<=MAXSIGNAL; i++) { */
+
+    err+=(signal(2, &sighandler) == SIG_ERR);		/* SIGINT */
+    err+=(signal(3, &sighandler) == SIG_ERR);		/* SIGQUIT */
+    err+=(signal(15, &sighandler) == SIG_ERR);		/* SIGTERM */
+    err+=(signal(20, &sighandler) == SIG_ERR);		/* SIGSTP */
+    if (err) {
+    	printf("main() had difficulty setting sighandler\n");
+	return(err);
     }
 
     init();

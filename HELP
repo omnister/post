@@ -76,13 +76,23 @@ by interpolation.  a(sqrt(4)) will return 4.0.  This
 functional notation replaces the yvalue() function of HP's post.
 
 Expressions are fairly obvious, read below for details.  You can 
-graph an expression with "gr" (graph on new plot), "gs" (graph on same plot)
-and "gn" (graph on same plot, but new scale).  Commands can be terminated
-with either ";" or a new line, so you can do things like:
+graph any number of expressions on the same graph with "gr". 
 
-	: gr a; gs b; gn c; gs d
+	: gr a b c
 
-To make a graph with a,b on the top axis and c,d on the bottom.
+You can plot two groups of variables on separate axes with
+
+	: gr a b c : d e f
+
+You can limit the xaxis range with "xl <start> <stop>".  This
+will apply to all axes.  If xl is used twice on a command line,
+the last one will take precedence:
+
+	: gr a b : d e xl .1 1.8
+
+Finally, each graph can have its yaxis range set with "yl <min> <max>"
+
+	: gr a b yl -1 1: d e yl -2 2 xl .1 1.8
 
 Piecewise linear (PWL) variables can be treated like normal scalars. 
 Generally post will do the obvious, most useful thing.  Adding two PWLs
@@ -198,6 +208,19 @@ the output.  This allows the max/min functions to be used as a multiplexer.
     d=min(p1)		;find k where p1(k).re is minimum, return p1(k)
     			;note: decision is made on real value, but 
 			;complex value is returned.
+
+# PAUSE
+    
+    pause(<expression>)	;post will sleep(2) for expression.re seconds
+                        ;if an interrupt (usually ^C) is received, the
+			;pause will be aborted, returning to normal 
+			;command flow.  Pause is handy for putting
+			;between graph commands so the user can page
+			;through multiple graph results with ^C.
+			;pause() returns the number of seconds remaining
+			;to wait.  If you don't want this number printed
+			;then assign it to a scratch variable eg:
+			;"tmp=pause(10000)"
 
 # PHASE
 

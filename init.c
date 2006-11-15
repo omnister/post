@@ -20,6 +20,11 @@ static struct {
     {"di",      DI},	/* display loaded sig names */
     {"ls",      LS},	/* list loadable rawfiles in cwd */
     {"pr",      PR},	/* print variable */
+    {"xl",      XL},	/* print variable */
+    {"yl",      YL},	/* print variable */
+    {"quit",    QUIT},	/* quit */
+    {"exit",    QUIT},	/* quit */
+    {"bye" ,    QUIT},	/* quit */
     {0,		0}
 };
 
@@ -67,9 +72,11 @@ static struct {	    /* built-ins */
     {"mag",	   Mag},	/* binop */
     {"min", 	   Min},	/* binop */
     {"max", 	   Max},	/* binop */
+    {"pause", 	   dopause},	
     {"pow", 	   Pow},	/* binop */
     {"sqrt", 	   Sqrt},	/* binop */
     {"warp", 	   Warp},	/* binop */
+    {"delay", 	   Warp},	/* binop */
     {"xcross", 	   xcross},	/* binop */
     {"xcrossn",    xcrossn},	/* binop */
     {"xcrossp",    xcrossp},	/* binop */
