@@ -1,11 +1,15 @@
-
 /* complex waveform calculator */
+/* I must have *, 3I not allowed anymore */
+/* need to add back yvalue() */
 
 %{
 
 #include "post.h"
 #include "script.h"
 #define YYDEBUG 1
+
+char buf[128];
+
 
 %}
 
@@ -17,10 +21,9 @@
 
 %token <y_sym>   I
 %token <y_num>   NUMBER
+%type  <y_num>   real
 %token <y_sym>   VAR BLTIN UNDEF STRING
 %token <y_sym>   GR
-%token <y_sym>   GS
-%token <y_sym>   GN
 %token <y_sym>   XL
 %token <y_sym>   YL
 %token <y_sym>   LS 
@@ -30,16 +33,13 @@
 %token <y_sym>   QUIT 
 %type  <y_datum> expr
 %type  <y_datum> asgn
-%type  <y_datum> fxn
-%type  <y_datum> gs
-%type  <y_datum> gn
 %type  <y_datum> pr 
 %type  <y_datum> coord
 %type  <y_datum> coord_list
 %right '='
 %left '+' '-'
 %left '*' '/'
-%left UNARYMINUS UNARYPLUS
+%nonassoc UNARYMINUS UNARYPLUS
 %right '^'	/* exponentiation */
 %%
 
@@ -79,54 +79,45 @@ list:	/* empty */
 
 /****************************************/
 
-gr: 	   XX plotlist { 
+gr: 	     GR {graphinit();} plotlist { 
 		graphprint(0);
 	     };
 
-XX:        GR {
-                graphinit();
-             };
-
-plotlist:  plotspec {};
-	   | plotlist plotsep plotspec {};
+plotlist:  plotspec 
+	   | plotlist plotsep plotspec; 
 	   ;
 
-plotsep:  ':' {
+plotsep:  ';' {
 		graphnext();
              };
 
-plotspec:  /* empty */ { };
-   	   | plotspec expr {
-	   	graphexpr($2);
-		free_dat($2);
+plotspec:  expr {
+	   	graphexpr($1);
+		free_dat($1);
+	      };
+   	   | plotspec ',' expr {
+	   	graphexpr($3);
+		free_dat($3);
 	      };
    	   | plotspec xl;
 	   | plotspec yl;
 	   ;
 
-xl:	   XL expr expr {
-		graphxl($2->re, $3->re);
+xl:	   XL expr ',' expr {
+		graphxl($2->re, $4->re);
 	        free_dat($2);
-	        free_dat($3);
+	        free_dat($4);
              };
-yl:	   YL expr expr { 
-		graphyl($2->re, $3->re);
+yl:	   YL expr ',' expr { 
+		graphyl($2->re, $4->re);
 	        free_dat($2);
-	        free_dat($3);
+	        free_dat($4);
 	     };
 
 /****************************************/
 
 pr:	PR expr	{ $$ = $2; }
 
-gs:	GS expr	{ $$ = $2; }
-
-gn:	GN expr	{ $$ = $2; }
-
-fxn:    VAR '(' expr ')' {
-	      $$ = interp($1->u.val, $3);
-	      free($3);
-	    }
 
 asgn:   VAR '=' expr    { 
 		free($1->u.val);	/* remove old value */
@@ -136,41 +127,75 @@ asgn:   VAR '=' expr    {
 	    }
         ;
 
-expr:	NUMBER 		{ $$ = new_dat((double) $1,0.0); }
-	| NUMBER I      { $$ = new_dat(0.0,(double) $1); };
+real:   NUMBER		 
+        | '-' NUMBER %prec UNARYMINUS {
+	        $$=($2*-1.0);
+	    }
+
+expr:	real 		{ $$ = new_dat((double) $1,0.0); }
+	| real I        { $$ = new_dat(0.0,(double) $1); }; 
 	| '{' coord_list '}' { $$ = $2; }
 	| I             { $$ = new_dat(0.0, 1.0); };
-	| VAR 		{ if ($1->type == UNDEF) 
-	                     execerror("undefined variable", $1->name);
-			  $$ = dup_dat($1->u.val);
-			}
-	| fxn
-	| BLTIN '(' expr ',' expr ')' { $$ = (*($1->u.ptr))($3,$5); 
-	                       free_dat($3); }
-	| BLTIN '(' expr ')'          { $$ = (*($1->u.ptr))($3,NULL); 
-	                       free_dat($3); }
+	| VAR { 
+		if ($1->type == UNDEF) 
+		execerror("undefined variable", $1->name);
+
+		$$ = dup_dat($1->u.val);
+		sprintf(buf, "%s", $1->name);
+		stringupdate($$, strsave(buf));
+	    }
+        | VAR '(' expr ')' {
+		if ($1->type == UNDEF) 
+		execerror("undefined variable", $1->name);
+
+	        $$ = interp($1->u.val, $3);
+	        sprintf(buf, "%s(%g)", $1->name, $3->re);
+		stringupdate($$, strsave(buf));
+	        free($3);
+	    }
+	| BLTIN '(' expr ',' expr ')' { 
+	        $$ = (*($1->u.ptr))($3,$5); 
+		sprintf(buf, "%s(%s,%s)", $1->name, $3->def, $5->def);
+		stringupdate($$, strsave(buf));
+	        free_dat($3); 
+	        free_dat($5); 
+	    }
+	| BLTIN '(' expr ')' {
+	        $$ = (*($1->u.ptr))($3,NULL); 
+		sprintf(buf, "%s(%s)", $1->name, $3->def);
+		stringupdate($$, strsave(buf));
+	        free_dat($3); 
+	   }
 	| '+' expr %prec UNARYPLUS {
-	       $$ = $2;
+	        $$ = $2;
 	   }
 	| '-' expr %prec UNARYMINUS {
 		DATUM *pp;
 		pp = new_dat(0.0, 0.0);
 		$$ = binary(SUB,pp,$2); 
+		sprintf(buf, "-%s", $2->def);
+		stringupdate($$, strsave(buf));
 		free_dat($2);
 		free_dat(pp);
 	    }
         | expr '+' expr { 
 		    $$ = binary(ADD, $1,$3);
+		    sprintf(buf, "%s+%s", $1->def, $3->def);
+		    stringupdate($$, strsave(buf));
 		    free_dat($1);
 		    free_dat($3);
 		}
 	| expr '-' expr {
 		    $$ = binary(SUB,$1,$3); 
+		    sprintf(buf, "%s-%s", $1->def, $3->def);
+		    stringupdate($$, strsave(buf));
 		    free_dat($1);
 		    free_dat($3);
 		}
 	| expr '*' expr { 
 		    $$ = binary(MULT,$1,$3); 
+		    sprintf(buf, "%s*%s", $1->def, $3->def);
+		    stringupdate($$, strsave(buf));
 		    free_dat($1);
 		    free_dat($3);
 		}
@@ -182,20 +207,27 @@ expr:	NUMBER 		{ $$ = new_dat((double) $1,0.0); }
 		        execerror("division by zero", "");
 		    }
 		    $$ = binary(DIV,$1,$3); 
+		    sprintf(buf, "%s/%s", $1->def, $3->def);
+		    stringupdate($$, strsave(buf));
 		    free_dat($1);
 		    free_dat($3);
 		}
 	| expr '^' expr { 
 		    $$ = binary(POW, $1, $3);
+		    sprintf(buf, "%s^%s", $1->def, $3->def);
+		    stringupdate($$, strsave(buf));
 		    free_dat($1);
 		    free_dat($3);
-	            }
-	| '(' expr ')' { $$ = $2; }
+	        }
+	| '(' expr ')' { 
+		    $$ = $2; 
+		    sprintf(buf, "(%s)", $2->def);
+		    stringupdate($$, strsave(buf));
+	        }
 	;
 
-
-coord	:  expr ',' expr {
-		$3->iv = $1->re;
+coord	:  real ',' expr {
+		$3->iv = $1;
 		$$ = $3;
 		}
 	;
@@ -208,7 +240,7 @@ coord_list: coord  coord {
 	}
 		;
 eos:    '\n'
-        | ';'
+/*        | ';' */
         ;
 %%
 
@@ -237,6 +269,13 @@ double  getdouble();
 
 int	c;	    /* global for use by warning() */
 int     yyparse();
+		
+void stringupdate(DATUM *d, char *b) {
+   if (d->def != NULL ) {
+      free(d->def);
+   } 
+   d->def = b;
+}
 
 void sighandler(x)
 int x;
@@ -254,6 +293,20 @@ int x;
        }
     }
     last = x;
+}
+
+char *strsave(s)   /* save string s somewhere */
+char *s;
+{
+    char *p;
+
+    if (s == NULL) {
+        return(s);
+    }
+
+    if ((p = (char *) malloc(strlen(s)+1)) != NULL)
+	strcpy(p,s);
+    return(p);
 }
 
 int main(argc, argv)    /* hoc 6 */
@@ -294,6 +347,7 @@ char *argv[];
 
     init();
     while (moreinput()) {
+	if (fin==stdin) license();
 	run();
     }
     return 0;
@@ -400,21 +454,22 @@ int comment()	/* strip out a potential comment */
 int yylex()
 {
     int c;
+    int rval;
 
     while ((c=rlgetc(fin)) == ' ' || c == '\t') {
     	;
     }
 
-    if (c == EOF)
-    	return 0;
+    if (c == '\n')
+    	lineno++;
 
-    if (c == '.'  || isdigit(c)) {	/* number */
+    if (c == EOF) {
+	rval=0;
+    } else if (c == '.'  || isdigit(c)) {	/* number */
 	double d;
 	rl_ungetc(c,fin);
 
-	/* printf("calling getdouble()..."); */
 	d = getdouble(fin); 
-	/* printf("returned with %e\n",d); */
 
 	/************ Engineering Suffixes Notation <RCW> 10/1/93 **********/
 	/************ added percent 11/12/06 *******************************/
@@ -453,10 +508,8 @@ int yylex()
 	}
 	/************************************************************/
 	yylval.y_num = d; 
-	return NUMBER;
-    }
-
-    if (isalpha(c)) {
+	rval=NUMBER;
+    } else if (isalpha(c)) {
         Symbol *s;
 	char sbuf[100], *p = sbuf;
 	do {
@@ -471,15 +524,10 @@ int yylex()
 	}
 
 	yylval.y_sym=s;
-	return s->type == UNDEF ? VAR : s->type;
-    }
-
-    if (c == '\n')
-    	lineno++;
-
-    if (c == '/') return(comment());
-
-    if ( c== '"') {	/* quoted string */
+	rval = s->type == UNDEF ? VAR : s->type;
+    } else if (c == '/') {
+        rval = comment(); 
+    } else if ( c== '"') {	/* quoted string */
 	char sbuf[100], *p, *emalloc();
 	for (p = sbuf; (c=rlgetc(fin)) != '"'; p++) {
 	    if (c == '\n' || c == EOF)
@@ -493,10 +541,12 @@ int yylex()
 	*p = 0;
 	yylval.y_sym = (Symbol *)emalloc(strlen(sbuf)+1);
 	strcpy((char *) yylval.y_sym, sbuf);
-	return STRING;
+	rval = STRING;
+    } else {
+        rval = c;
     }
 
-    return c;
+    return rval;
 }
 
 

@@ -78,21 +78,25 @@ functional notation replaces the yvalue() function of HP's post.
 Expressions are fairly obvious, read below for details.  You can 
 graph any number of expressions on the same graph with "gr". 
 
-	: gr a b c
+	: gr a,b,c
 
 You can plot two groups of variables on separate axes with
 
-	: gr a b c : d e f
+	: gr a,b,c ; d, e, f
 
 You can limit the xaxis range with "xl <start> <stop>".  This
 will apply to all axes.  If xl is used twice on a command line,
 the last one will take precedence:
 
-	: gr a b : d e xl .1 1.8
+	: gr a,b ; d,e xl .1 1.8
 
 Finally, each graph can have its yaxis range set with "yl <min> <max>"
 
-	: gr a b yl -1 1: d e yl -2 2 xl .1 1.8
+	: gr a,b yl -1,1; d,e yl -2,2 xl .1,1.8
+
+The rule is that each expression or PWL name must be separated from any
+other PWL or expression by either a "," or a ";".   A semicolon creates
+second plot.
 
 Piecewise linear (PWL) variables can be treated like normal scalars. 
 Generally post will do the obvious, most useful thing.  Adding two PWLs

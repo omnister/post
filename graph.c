@@ -84,9 +84,18 @@ void graphprint(int mode) {
     int i;
     char buf[128];
     time_t plottime;
+    int count=0;
+    double max,min,range, scale;
+    char name[128];
+    char *pn;
 
     plottime = time(NULL);
-    strftime(title, MAXBUF, "title %m/%d/%y-%H:%M:%S", localtime(&plottime));
+    strftime(buf, MAXBUF, "%m/%d/%y-%H:%M:%S", localtime(&plottime));
+    if ((pn=rawfile_name()) == NULL) {
+	sprintf(title, "title <stdin> - %s\n", buf);
+    } else {
+	sprintf(title, "title %s - %s\n", pn, buf);
+    }
 
     switch(mode) {
 	case 0:
@@ -108,27 +117,98 @@ void graphprint(int mode) {
 
     scriptfeed(title);		/* emit title */
 
+    count=0;
+    for (i=0; i<num; i++) {
+	p = &(plottab[i]);
+	if (p->datum != NULL) {
+	    if (count == 0) {
+		max=min=p->datum->iv;
+	    }
+	    count++;
+	    for (pd=p->datum; pd!=NULL; pd=pd->next) {
+		if (max<pd->iv) max=pd->iv;
+		if (min>pd->iv) min=pd->iv;
+	        sprintf(buf, "%g %g", pd->iv, pd->re);
+	        scriptfeed(buf);
+	    }
+	    sprintf(buf, "label -12%% %d%% %s", (int) (100.0-count*10.0), p->datum->def);
+	    scriptfeed(buf);
+	}
+    }
+    if (max-min != 0.0) {
+	range = log(max-min)/log(10.0);
+    	if (range < -12) {
+	   scale = 1e-15;
+	   strcpy(name, "femto");
+	} else if (range < -9.0) {
+	   scale = 1e-12;
+	   strcpy(name, "pico");
+	} else if (range < -6.0) {
+	   scale = 1e-9;
+	   strcpy(name, "nano");
+	} else if (range < -3.0) {
+	   scale = 1e-6;
+	   strcpy(name, "micro");
+	} else if (range < 0) {
+	   scale = 1e-3;
+	   strcpy(name, "milli");
+	} else if (range < 3.0) {
+	   scale = 1.0;
+	   strcpy(name, "");
+	} else if (range < 6.0) {
+	   scale = 1e3;
+	   strcpy(name, "kilo");
+	} else if (range < 9.0) {
+	   scale = 1e6;
+	   strcpy(name, "mega");
+	} else if (range < 12.0) {
+	   scale = 1e9;
+	   strcpy(name, "giga");
+	} else if (range < 15.0) {
+	   scale = 1e12;
+	   strcpy(name, "tera");
+	} else {
+	   scale = 1.0;
+	   strcpy(name, "");
+	} 
+
+	sprintf(buf, "xscale %g %sseconds", scale, name);
+	/* printf("%s: range:%g, max/min=%g/%g\n", buf, range, max,min); */
+	scriptfeed(buf);
+    }
+
+    count=0;
     for (i=0; i<num; i++) {
 	p = &(plottab[i]);
 	if (p->xlmin != p->xlmax) {
-	  sprintf(buf, "xset %g %g\n", p->xlmin, p->xlmax);
+	  sprintf(buf, "xset %g %g", p->xlmin, p->xlmax);
 	  scriptfeed(buf);
 	}
 	if (p->ylmin != p->ylmax) {
-	  sprintf(buf, "yset %g %g\n", p->ylmin, p->ylmax);
+	  sprintf(buf, "yset %g %g", p->ylmin, p->ylmax);
 	  scriptfeed(buf);
 	}
 	if (p->newgraph) {
-	  sprintf(buf, "nextygraph\n");
+	  count=0;
+	  sprintf(buf, "nextygraph");
 	  scriptfeed(buf);
 	}
 	if (p->datum != NULL) {
-	    for (pd=p->datum; pd!=NULL; pd=pd->next) {
-	       sprintf(buf, "%g %g\n", pd->iv, pd->re);
-	       scriptfeed(buf);
+	    if (count == 0) {
+		max=min=p->datum->iv;
 	    }
+	    count++;
+	    for (pd=p->datum; pd!=NULL; pd=pd->next) {
+		if (max<pd->iv) max=pd->iv;
+		if (min>pd->iv) min=pd->iv;
+	        sprintf(buf, "%g %g\n", pd->iv, pd->re);
+	        scriptfeed(buf);
+	    }
+	    sprintf(buf, "label -12%% %d%% %s", (int) (100.0-count*10.0), p->datum->def);
+	    scriptfeed(buf);
 	}
     }
     scriptclose();
 }
+
 

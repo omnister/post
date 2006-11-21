@@ -17,6 +17,11 @@
 #include "post.h"
 #include "y.tab.h"
 
+static char *rawfilename = NULL;
+
+char *rawfile_name() {
+    return(rawfilename);
+}
 
 int com_ci(char *rawfile)
 {
@@ -37,6 +42,9 @@ int com_ci(char *rawfile)
 	return(0);
     }
 
+    if (rawfilename != NULL) { free(rawfilename); } 
+    rawfilename = strsave(rawfile);
+    
     for (i = 0; i < wf->wf_ndv; i++) {
 	result = NULL;
         for (j = 0; j < wf->nvalues; j++) {
