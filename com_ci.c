@@ -73,7 +73,6 @@ int com_ci(char *rawfile)
 		case  ')':
 		case  '(':
 		case  '#':
-		   break;
 		default:
 		   *t++ = c;
 		   break;

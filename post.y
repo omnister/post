@@ -529,6 +529,7 @@ int yylex()
         rval = comment(); 
     } else if ( c== '"') {	/* quoted string */
 	char sbuf[100], *p, *emalloc();
+        Symbol *s;
 	for (p = sbuf; (c=rlgetc(fin)) != '"'; p++) {
 	    if (c == '\n' || c == EOF)
 		execerror("missing quote", "");
@@ -539,9 +540,14 @@ int yylex()
 	    *p = backslash(c);
 	}
 	*p = 0;
-	yylval.y_sym = (Symbol *)emalloc(strlen(sbuf)+1);
-	strcpy((char *) yylval.y_sym, sbuf);
-	rval = STRING;
+	if ((s=lookup(sbuf)) == 0) {
+	    yylval.y_sym = (Symbol *)emalloc(strlen(sbuf)+1);
+	    strcpy((char *) yylval.y_sym, sbuf);
+	    rval = STRING;
+	} else {
+	    yylval.y_sym=s;
+	    rval = s->type == UNDEF ? VAR : s->type;
+	}
     } else {
         rval = c;
     }
