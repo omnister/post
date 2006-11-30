@@ -1,7 +1,3 @@
-#ifndef YYERRCODE
-#define YYERRCODE 256
-#endif
-
 #define I 257
 #define NUMBER 258
 #define VAR 259

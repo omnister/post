@@ -80,7 +80,8 @@ list:	/* empty */
 /****************************************/
 
 gr: 	     GR {graphinit();} plotlist { 
-		graphprint(0);
+		/* graphprint_ap(0); */
+		graphprint_gnu(0);
 	     };
 
 plotlist:  plotspec 
@@ -240,7 +241,7 @@ coord_list: coord  coord {
 	}
 		;
 eos:    '\n'
-/*        | ';' */
+        | ';' 
         ;
 %%
 
@@ -514,7 +515,7 @@ int yylex()
 	char sbuf[100], *p = sbuf;
 	do {
 	    *p++ = c;
-	} while ((c=rlgetc(fin)) != EOF && isalnum(c));
+	} while ((c=rlgetc(fin)) != EOF && (isalnum(c) || c=='_'));
 
 	rl_ungetc(c,fin);
 	*p = '\0';

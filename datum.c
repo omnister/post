@@ -145,21 +145,21 @@ void print_dat(DATUM *p) {		/* format and print a datum */
    } else if (p->next != NULL) {
        printf("\t{\n"); 
        for (pd=p; pd!=NULL; pd=pd->next) {
-       	   printf("\t    %g,", pd->iv);
+       	   printf("\t    %.12g,", pd->iv);
 	   if (pd->im == 0.0) {
-		printf("%g\n",  pd->re); 		/* 8+0i prints as "8" */
+		printf("%.12g\n",  pd->re); 		/* 8+0i prints as "8" */
 	   } else {
 		if (pd->re == 0.0) {
 		    if (pd->im == 1.0) {
 			printf("i\n"); 		/* 1i => "i" */
 		    } else {
-			printf("%gi\n", pd->im); 	/* 2i => "2i" */
+			printf("%.12gi\n", pd->im); 	/* 2i => "2i" */
 		    }
 		} else {
 		    if (pd->im == 1.0) {
-			printf("%g+i\n", pd->re); 	/* 8+1i => "8+i" */
+			printf("%.12g+i\n", pd->re); 	/* 8+1i => "8+i" */
 		    } else {
-			printf("%g%+gi\n", pd->re, pd->im); /* 8+2i => "8+2i */
+			printf("%.12g%+.12gi\n", pd->re, pd->im); /* 8+2i => "8+2i */
 		    }
 		}
 	   }
@@ -167,19 +167,19 @@ void print_dat(DATUM *p) {		/* format and print a datum */
        printf("\t}\n"); 
    } else {
 	if (p->im == 0.0) {
-	    printf("\t%g\n",  p->re); 		/* 8+0i prints as "8" */
+	    printf("\t%.12g\n",  p->re); 		/* 8+0i prints as "8" */
 	} else {
 	    if (p->re == 0.0) {
 		if (p->im == 1.0) {
 		    printf("\ti\n"); 		/* 1i => "i" */
 		} else {
-		    printf("\t%gi\n", p->im); 	/* 2i => "2i" */
+		    printf("\t%.12gi\n", p->im); 	/* 2i => "2i" */
 		}
 	    } else {
 		if (p->im == 1.0) {
-		    printf("\t%g+i\n", p->re); 	/* 8+1i => "8+i" */
+		    printf("\t%.12g+i\n", p->re); 	/* 8+1i => "8+i" */
 		} else {
-		    printf("\t%g%+gi\n", p->re, p->im); /* 8+2i => "8+2i */
+		    printf("\t%.12g%+.12gi\n", p->re, p->im); /* 8+2i => "8+2i */
 		}
 	    }
 	}
@@ -377,7 +377,7 @@ DATUM *twovectors( BINOP op, DATUM *a, DATUM *b) {
 	    retb = readnext(&listb, &datumb2, &datumb);
 	} else if (c == 24) {
 	    reta = readnext(&lista, &datuma2, &datuma);
-	} else if (c==1 || c == 2 || c == 7) {
+	} else if (c==1 || c == 2 || c == 7 || c == 6) {	/* 6 is bug fix for coincident points */
 	    emit(op, &result, &tmax, &datuma2, tmp1=zint(datuma2.iv, &datumb2, &datumb));
 	    emit(op, &result, &tmax, tmp2=zint(datumb.iv, &datuma2, &datuma), &datumb);
 	    free_dat(tmp1); free_dat(tmp2);
@@ -402,7 +402,7 @@ DATUM *twovectors( BINOP op, DATUM *a, DATUM *b) {
 	    reta = readnext(&lista, &datuma2, &datuma);
 
 	} else {
-	   printf("bad case!\n");
+	   printf("bad case: %d!\n", c);
 	}
     }
     return(result);
@@ -1143,4 +1143,49 @@ DATUM * dopause(DATUM *a, DATUM *b) {		/* ansi already has a pause() command */
     }
 
     return(new_dat((double) sleep((int) a->re) ,0.0));
+}
+
+DATUM * lpf(DATUM *a, DATUM *b) {		
+    DATUM *p, *tmp;
+    DATUM *head;
+    double t, tau, dt, vx, v, vold, tnew, told, slope, vflat, vout;
+
+    if (b == NULL) {
+       printf("function needs two arguments!\n");
+       return(NULL);
+    }
+
+    tau = b->re; 
+
+    if (a->next == NULL) {
+	return( new_dat(a->re, a->im) ); 
+    } else {
+	vout = v = a->re;
+        head = new_dat(vout, 0.0);
+        tnew = head->iv = a->iv; 
+	t = tnew+tau/16.0;
+	for (p=a->next; p!=NULL; p=p->next) {
+	    vold = v; v = p->re;
+	    told = tnew; tnew = p->iv;
+	    dt=tnew-told;
+
+	    vflat = vold-vout;        /* flat portion */
+	    slope = (v-vold)/dt;      /* ramp portion */
+
+	    while(t <= tnew) {
+	        vx = vout + (vflat)*(1.0-exp(-(t-told)/tau));
+		/* printf("%g %g %g %g %g %g %g %g %g\n", v, vout, vold, vflat, t, tau, tnew, told, dt); */
+	        vx  += slope*((t-told) + tau*(exp(-(t-told)/tau) - 1.0));
+		tmp = new_dat(vx,0.0);
+		tmp->iv = t;
+		link_dat(head,tmp);
+		t+=tau/16.0;
+            }
+
+	    /* printf("... %g %g %g %g\n", vflat, dt, tau, slope); */
+	    vout += vflat*(1.0-exp(-dt/tau));
+	    vout += slope*(dt + tau*(exp(-dt/tau) - 1.0));
+       }
+       return(head);
+    }
 }

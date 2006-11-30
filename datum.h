@@ -33,6 +33,7 @@ DATUM *  Warp(DATUM *a, DATUM *b);
 DATUM *  xcross(DATUM *a, DATUM *b);
 DATUM *  xcrossp(DATUM *a, DATUM *b);
 DATUM *  xcrossn(DATUM *a, DATUM *b);
+DATUM *  lpf(DATUM *a, DATUM *b);
 
 /* unaries -- second arg is for error checking */
 /* should be passed as NULL */

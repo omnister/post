@@ -1,0 +1,10 @@
+a graphing post processor for spice files
+GPL v2.0
+
+To get this working, you'll also need the
+autoplot(1) package.  Write me for details.
+
+See the HELP file for some useful comments.
+--
+Rick Walker
+walker@omnisterra.com

@@ -32,6 +32,7 @@ extern void graphexpr(DATUM *d);
 extern void graphxl(double xlmin, double xlmax);
 extern void graphyl(double ylmin, double ylmax);
 extern void graphprint();
+extern void graphprint_gnu();
 
 char    *rl_gets();
 int     rlgetc();

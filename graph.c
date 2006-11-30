@@ -78,7 +78,7 @@ void graphyl(double ylmin, double ylmax) {
    p->ylmax = ylmax;
 }
 
-void graphprint(int mode) {
+void graphprint_ap(int mode) {		/* autoplot */
     PLOTSPEC *p;
     DATUM *pd;
     int i;
@@ -128,10 +128,10 @@ void graphprint(int mode) {
 	    for (pd=p->datum; pd!=NULL; pd=pd->next) {
 		if (max<pd->iv) max=pd->iv;
 		if (min>pd->iv) min=pd->iv;
-	        sprintf(buf, "%g %g", pd->iv, pd->re);
+	        sprintf(buf, "%g %g\n", pd->iv, pd->re);
 	        scriptfeed(buf);
 	    }
-	    sprintf(buf, "label -12%% %d%% %s", (int) (100.0-count*10.0), p->datum->def);
+	    sprintf(buf, "label -12%% %d%% %s\n", (int) (100.0-count*10.0), p->datum->def);
 	    scriptfeed(buf);
 	}
     }
@@ -172,7 +172,7 @@ void graphprint(int mode) {
 	   strcpy(name, "");
 	} 
 
-	sprintf(buf, "xscale %g %sseconds", scale, name);
+	sprintf(buf, "xscale %g %sseconds\n", scale, name);
 	/* printf("%s: range:%g, max/min=%g/%g\n", buf, range, max,min); */
 	scriptfeed(buf);
     }
@@ -181,16 +181,16 @@ void graphprint(int mode) {
     for (i=0; i<num; i++) {
 	p = &(plottab[i]);
 	if (p->xlmin != p->xlmax) {
-	  sprintf(buf, "xset %g %g", p->xlmin, p->xlmax);
+	  sprintf(buf, "xset %g %g\n", p->xlmin, p->xlmax);
 	  scriptfeed(buf);
 	}
 	if (p->ylmin != p->ylmax) {
-	  sprintf(buf, "yset %g %g", p->ylmin, p->ylmax);
+	  sprintf(buf, "yset %g %g\n", p->ylmin, p->ylmax);
 	  scriptfeed(buf);
 	}
 	if (p->newgraph) {
 	  count=0;
-	  sprintf(buf, "nextygraph");
+	  sprintf(buf, "nextygraph\n");
 	  scriptfeed(buf);
 	}
 	if (p->datum != NULL) {
@@ -204,7 +204,7 @@ void graphprint(int mode) {
 	        sprintf(buf, "%g %g\n", pd->iv, pd->re);
 	        scriptfeed(buf);
 	    }
-	    sprintf(buf, "label -12%% %d%% %s", (int) (100.0-count*10.0), p->datum->def);
+	    sprintf(buf, "label -12%% %d%% %s\n", (int) (100.0-count*10.0), p->datum->def);
 	    scriptfeed(buf);
 	}
     }
@@ -212,3 +212,201 @@ void graphprint(int mode) {
 }
 
 
+void graphprint_gnu(int mode) {		/* gnuplot */
+    DATUM *pd;
+    int i;
+    char buf[128];
+    time_t plottime;
+    char *pn;
+    double ngraphs;
+
+    system("killall gnuplot_x11");
+
+    plottime = time(NULL);
+    strftime(buf, MAXBUF, "%m/%d/%y-%H:%M:%S", localtime(&plottime));
+    if ((pn=rawfile_name()) == NULL) {
+	sprintf(title, "title <stdin> - %s\n", buf);
+    } else {
+	sprintf(title, "title %s - %s\n", pn, buf);
+    }
+
+    if (scriptopen("gnuplot", NULL) == 0) { 
+       printf("can't open gnuplot!\n");
+       return;
+    } 
+
+    /*******  Print gnuplot headers *********/
+    /* scriptfeed("reset\n"); */
+    scriptfeed("set term x11 persist\n");
+    scriptfeed("set multiplot\n");
+    scriptfeed("set xtics nomirror\n");
+    scriptfeed("set ytics nomirror\n");
+    scriptfeed("set grid back\n");
+    scriptfeed("set style data lines\n");
+    /****************************************/
+
+    double ylmin=0.0; 
+    double ylmax=0.0;
+
+    ngraphs=1.0;	/* scan through to find how many graphs, get ylmin/max */
+    for (i=0; i<num; i++) {
+	if (plottab[i].newgraph) {
+	    ngraphs++;
+	}
+	if (plottab[i].ylmin != plottab[i].ylmax) {
+	    ylmin = plottab[i].ylmin;
+	    ylmax = plottab[i].ylmax;
+	}
+    }
+
+    double xlmin=0.0; 
+    double xlmax=0.0;
+    double start, stop;
+    double plot=0.0;
+
+    
+    start=0.0;
+    stop=0.0;
+    while (stop!=num) {
+        plot++;
+
+	for (i=start; (i<num && !plottab[i].newgraph); i++) {
+	    if (plottab[i].xlmin != plottab[i].xlmax) {
+		xlmin = plottab[i].xlmin;
+		xlmax = plottab[i].xlmax;
+	    }
+	}
+	stop=i;
+	
+	/* set frame size */
+
+	sprintf(buf, "#ngraphs = %g, plot=%g\n", ngraphs, plot);
+	scriptfeed(buf);
+
+	sprintf(buf, "set size 1,%g\n", 0.9/ngraphs);
+	scriptfeed(buf);
+	sprintf(buf, "set origin 0.0,%g\n", 0.1+(plot-1.0)*(0.9/ngraphs));
+	scriptfeed(buf);
+
+	/* create plot header, ranges, names */
+
+	scriptfeed("plot ");
+	if (xlmin != xlmax) {
+	    sprintf(buf, "[%g:%g] ", xlmin, xlmax);
+	    scriptfeed(buf);
+	} else {
+	    scriptfeed("[:] ");
+	}
+	if (ylmin != ylmax) {
+	    sprintf(buf, "[%g:%g] ", ylmin, ylmax);
+	    scriptfeed(buf);
+	} else {
+	    scriptfeed("[:] ");
+	}
+
+	int c=0;
+	for (i=start; i<stop; i++) {
+	    if (plottab[i].datum != NULL) {
+		if (c!=0) {
+		    scriptfeed(",");
+		}
+		sprintf(buf, "\"-\" title \"%s\"", plottab[i].datum->def);
+		scriptfeed(buf);
+		c++;
+	    }
+	}
+        scriptfeed("\n");
+
+	for (i=start; i<stop; i++) {
+	    if (plottab[i].datum != NULL) {
+		for (pd=plottab[i].datum; pd!=NULL; pd=pd->next) {
+		    sprintf(buf, "%g %g\n", pd->iv, pd->re);
+		    scriptfeed(buf);
+		}
+		scriptfeed("e\n");
+	    }
+	}
+
+	start=stop+1;
+    }
+
+    scriptfeed("unset multiplot\n");
+    scriptclose();
+}
+
+/*
+    scriptfeed("plot [:][-1:1] sin(x) title \"f(x)\", cos(x), cos(x+1)");
+
+    scriptfeed("set size 1,0.45");
+    scriptfeed("set origin 0.0,0.1");
+
+    scriptfeed("set format x \"%g\"");
+
+    scriptfeed("set lmargin 10");
+    scriptfeed("set rmargin 10");
+    scriptfeed("set bmargin 0");
+
+    scriptfeed("plot [:][-2:2] cos(x)");
+
+    scriptfeed("unset multiplot");
+
+    count=0;
+    for (i=0; i<num; i++) {
+	p = &(plottab[i]);
+
+	if (p->xlmin != p->xlmax) {
+	  sprintf(buf, "xset %g %g", p->xlmin, p->xlmax);
+	  scriptfeed(buf);
+	}
+
+	if (p->ylmin != p->ylmax) {
+	  sprintf(buf, "yset %g %g", p->ylmin, p->ylmax);
+	  scriptfeed(buf);
+	}
+
+	if (p->newgraph) {
+	  count++
+    
+	  sprintf(buf, "set size 1,%g", 0.9/ngraphs);
+	  scriptfeed(buf);
+	  sprintf(buf, "set origin 0.0,%g", 0.1+(count-1.0)*(0.9/ngraphs));
+	  scriptfeed(buf);
+	  scriptfeed("set lmargin 10");
+	  scriptfeed("set rmargin 10");
+	  scriptfeed("set bmargin 0");
+
+	  if (count == ngraphs) {
+	      scriptfeed("set format x \"\"");
+	  }
+	}
+
+	if (p->datum != NULL) {
+	    for (pd=p->datum; pd!=NULL; pd=pd->next) {
+	        sprintf(buf, "%g %g\n", pd->iv, pd->re);
+	        scriptfeed(buf);
+	    }
+	    scriptfeed(buf);
+	}
+    }
+    scriptclose();
+}
+
+xyminmax
+newgraph
+graphs
+...
+newgraph
+graphs
+...
+
+preamble
+
+for(k=0; k<=plotframe; k++) {
+    header(k)
+    title(ka) title(kb)... title(numplots_k)
+    data(ka)
+    data(kb)
+    ...
+    data(kn_1)
+}
+*/

@@ -23,7 +23,7 @@
 #define CMD "/usr/local/bin/ap"
 
 static FILE *rcvfp;
-static FILE *sendfp;
+static FILE *sendfp = NULL;
 static int sendfd;
 static int pid;
 
@@ -37,6 +37,15 @@ int scriptopen(char* prog, char *arg)
     int pfdout[2], pfdin[2];
     char *msg;
     int err=0;
+    
+    /*
+    if (scriptfeed("reset \n")) {
+       printf("running\n");
+       return (1);
+    } else {
+       printf("starting\n");
+    }
+    */
 
     do {				/* context for error checking */
 	if(pipe(pfdout) == -1) { err++; msg="pipe 1"; break; };
@@ -66,6 +75,7 @@ int scriptopen(char* prog, char *arg)
     }
 
     /* from here on down we are in parent */
+    /* printf("parent: child pid = %d\n", pid); */
 
     do {				/* context for error checking */
      	if (close(pfdout[0]) == -1)		  {err++; msg="close 11" ; break;};
@@ -90,7 +100,9 @@ void onalarm() 	/* kill child process on alarm */
 }
 
 int scriptclose() {
+    /* return(0); */
     close(sendfd);	        /* send EOF */
+    sendfp = NULL;
     return(1);
 }
 
@@ -116,7 +128,11 @@ int scriptread(char *buf, int n, int timeout) {
 
 int scriptfeed(char *msg) {
 
-    if (fprintf(sendfp, "%s\n",msg) < 0) {
+    if (sendfp == NULL) {
+        return(0);
+    }
+
+    if (fprintf(sendfp, "%s",msg) < 0) {
         return(0);
     } else {
 	fflush(sendfp);

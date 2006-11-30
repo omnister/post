@@ -60,6 +60,7 @@
   45             | coord_list coord
 
   46  eos : '\n'
+  47      | ';'
 
 state 0
 	$accept : . list $end  (0)
@@ -97,26 +98,28 @@ state 1
 	QUIT  shift 12
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
-	'\n'  shift 17
+	';'  shift 15
+	'{'  shift 16
+	'('  shift 17
+	'\n'  shift 18
 	.  error
 
-	real  goto 18
-	expr  goto 19
-	asgn  goto 20
-	pr  goto 21
-	eos  goto 22
-	gr  goto 23
+	real  goto 19
+	expr  goto 20
+	asgn  goto 21
+	pr  goto 22
+	eos  goto 23
+	gr  goto 24
 
 
 state 2
 	list : list error . eos  (11)
 
-	'\n'  shift 17
+	';'  shift 15
+	'\n'  shift 18
 	.  error
 
-	eos  goto 24
+	eos  goto 25
 
 
 state 3
@@ -136,13 +139,14 @@ state 5
 	expr : VAR .  (31)
 	expr : VAR . '(' expr ')'  (32)
 
-	'='  shift 25
-	'('  shift 26
+	'='  shift 26
+	'('  shift 27
 	'+'  reduce 31
 	'-'  reduce 31
 	'*'  reduce 31
 	'/'  reduce 31
 	'^'  reduce 31
+	';'  reduce 31
 	'\n'  reduce 31
 
 
@@ -150,7 +154,7 @@ state 6
 	expr : BLTIN . '(' expr ',' expr ')'  (33)
 	expr : BLTIN . '(' expr ')'  (34)
 
-	'('  shift 27
+	'('  shift 28
 	.  error
 
 
@@ -160,16 +164,17 @@ state 7
 
 	.  reduce 12
 
-	$$1  goto 28
+	$$1  goto 29
 
 
 state 8
 	list : list LS . eos  (7)
 
-	'\n'  shift 17
+	';'  shift 15
+	'\n'  shift 18
 	.  error
 
-	eos  goto 29
+	eos  goto 30
 
 
 state 9
@@ -177,41 +182,43 @@ state 9
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 31
+	real  goto 19
+	expr  goto 32
 
 
 state 10
 	list : list CI . STRING eos  (8)
 
-	STRING  shift 32
+	STRING  shift 33
 	.  error
 
 
 state 11
 	list : list DI . eos  (10)
 
-	'\n'  shift 17
+	';'  shift 15
+	'\n'  shift 18
 	.  error
 
-	eos  goto 33
+	eos  goto 34
 
 
 state 12
 	list : list QUIT . eos  (9)
 
-	'\n'  shift 17
+	';'  shift 15
+	'\n'  shift 18
 	.  error
 
-	eos  goto 34
+	eos  goto 35
 
 
 state 13
@@ -219,16 +226,16 @@ state 13
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 35
+	real  goto 19
+	expr  goto 36
 
 
 state 14
@@ -236,59 +243,65 @@ state 14
 	expr : '-' . expr  (36)
 
 	I  shift 3
-	NUMBER  shift 36
-	VAR  shift 30
+	NUMBER  shift 37
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 37
+	real  goto 19
+	expr  goto 38
 
 
 state 15
-	expr : '{' . coord_list '}'  (29)
+	eos : ';' .  (47)
 
-	NUMBER  shift 4
-	'-'  shift 38
-	.  error
-
-	real  goto 39
-	coord  goto 40
-	coord_list  goto 41
+	.  reduce 47
 
 
 state 16
+	expr : '{' . coord_list '}'  (29)
+
+	NUMBER  shift 4
+	'-'  shift 39
+	.  error
+
+	real  goto 40
+	coord  goto 41
+	coord_list  goto 42
+
+
+state 17
 	expr : '(' . expr ')'  (42)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 42
+	real  goto 19
+	expr  goto 43
 
 
-state 17
+state 18
 	eos : '\n' .  (46)
 
 	.  reduce 46
 
 
-state 18
+state 19
 	expr : real .  (27)
 	expr : real . I  (28)
 
-	I  shift 43
+	I  shift 44
 	NUMBER  reduce 27
 	XL  reduce 27
 	YL  reduce 27
@@ -304,7 +317,7 @@ state 18
 	'\n'  reduce 27
 
 
-state 19
+state 20
 	list : list expr . eos  (5)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -312,138 +325,142 @@ state 19
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
-	'\n'  shift 17
-	.  error
-
-	eos  goto 49
-
-
-state 20
-	list : list asgn . eos  (4)
-
-	'\n'  shift 17
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
+	';'  shift 15
+	'\n'  shift 18
 	.  error
 
 	eos  goto 50
 
 
 state 21
-	list : list pr . eos  (3)
+	list : list asgn . eos  (4)
 
-	'\n'  shift 17
+	';'  shift 15
+	'\n'  shift 18
 	.  error
 
 	eos  goto 51
 
 
 state 22
-	list : list eos .  (2)
+	list : list pr . eos  (3)
 
-	.  reduce 2
-
-
-state 23
-	list : list gr . eos  (6)
-
-	'\n'  shift 17
+	';'  shift 15
+	'\n'  shift 18
 	.  error
 
 	eos  goto 52
 
 
+state 23
+	list : list eos .  (2)
+
+	.  reduce 2
+
+
 state 24
+	list : list gr . eos  (6)
+
+	';'  shift 15
+	'\n'  shift 18
+	.  error
+
+	eos  goto 53
+
+
+state 25
 	list : list error eos .  (11)
 
 	.  reduce 11
 
 
-state 25
+state 26
 	asgn : VAR '=' . expr  (24)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 53
-
-
-state 26
-	expr : VAR '(' . expr ')'  (32)
-
-	I  shift 3
-	NUMBER  shift 4
-	VAR  shift 30
-	BLTIN  shift 6
-	'+'  shift 13
-	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
-	.  error
-
-	real  goto 18
+	real  goto 19
 	expr  goto 54
 
 
 state 27
+	expr : VAR '(' . expr ')'  (32)
+
+	I  shift 3
+	NUMBER  shift 4
+	VAR  shift 31
+	BLTIN  shift 6
+	'+'  shift 13
+	'-'  shift 14
+	'{'  shift 16
+	'('  shift 17
+	.  error
+
+	real  goto 19
+	expr  goto 55
+
+
+state 28
 	expr : BLTIN '(' . expr ',' expr ')'  (33)
 	expr : BLTIN '(' . expr ')'  (34)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 55
+	real  goto 19
+	expr  goto 56
 
 
-state 28
+state 29
 	gr : GR $$1 . plotlist  (13)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 56
-	plotlist  goto 57
-	plotspec  goto 58
+	real  goto 19
+	expr  goto 57
+	plotlist  goto 58
+	plotspec  goto 59
 
 
-state 29
+state 30
 	list : list LS eos .  (7)
 
 	.  reduce 7
 
 
-state 30
+state 31
 	expr : VAR .  (31)
 	expr : VAR . '(' expr ')'  (32)
 
-	'('  shift 26
+	'('  shift 27
 	NUMBER  reduce 31
 	XL  reduce 31
 	YL  reduce 31
@@ -459,7 +476,7 @@ state 30
 	'\n'  reduce 31
 
 
-state 31
+state 32
 	pr : PR expr .  (23)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -467,36 +484,38 @@ state 31
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
+	';'  reduce 23
 	'\n'  reduce 23
 
 
-state 32
+state 33
 	list : list CI STRING . eos  (8)
 
-	'\n'  shift 17
+	';'  shift 15
+	'\n'  shift 18
 	.  error
 
-	eos  goto 59
+	eos  goto 60
 
 
-state 33
+state 34
 	list : list DI eos .  (10)
 
 	.  reduce 10
 
 
-state 34
+state 35
 	list : list QUIT eos .  (9)
 
 	.  reduce 9
 
 
-state 35
+state 36
 	expr : '+' expr .  (35)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -504,7 +523,7 @@ state 35
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'^'  shift 48
+	'^'  shift 49
 	NUMBER  reduce 35
 	XL  reduce 35
 	YL  reduce 35
@@ -519,28 +538,28 @@ state 35
 	'\n'  reduce 35
 
 
-36: reduce/reduce conflict (reduce 25, reduce 26) on I
-36: reduce/reduce conflict (reduce 25, reduce 26) on NUMBER
-36: reduce/reduce conflict (reduce 25, reduce 26) on XL
-36: reduce/reduce conflict (reduce 25, reduce 26) on YL
-36: reduce/reduce conflict (reduce 25, reduce 26) on '+'
-36: reduce/reduce conflict (reduce 25, reduce 26) on '-'
-36: reduce/reduce conflict (reduce 25, reduce 26) on '*'
-36: reduce/reduce conflict (reduce 25, reduce 26) on '/'
-36: reduce/reduce conflict (reduce 25, reduce 26) on '^'
-36: reduce/reduce conflict (reduce 25, reduce 26) on ';'
-36: reduce/reduce conflict (reduce 25, reduce 26) on ','
-36: reduce/reduce conflict (reduce 25, reduce 26) on '}'
-36: reduce/reduce conflict (reduce 25, reduce 26) on ')'
-36: reduce/reduce conflict (reduce 25, reduce 26) on '\n'
-state 36
+37: reduce/reduce conflict (reduce 25, reduce 26) on I
+37: reduce/reduce conflict (reduce 25, reduce 26) on NUMBER
+37: reduce/reduce conflict (reduce 25, reduce 26) on XL
+37: reduce/reduce conflict (reduce 25, reduce 26) on YL
+37: reduce/reduce conflict (reduce 25, reduce 26) on '+'
+37: reduce/reduce conflict (reduce 25, reduce 26) on '-'
+37: reduce/reduce conflict (reduce 25, reduce 26) on '*'
+37: reduce/reduce conflict (reduce 25, reduce 26) on '/'
+37: reduce/reduce conflict (reduce 25, reduce 26) on '^'
+37: reduce/reduce conflict (reduce 25, reduce 26) on ';'
+37: reduce/reduce conflict (reduce 25, reduce 26) on ','
+37: reduce/reduce conflict (reduce 25, reduce 26) on '}'
+37: reduce/reduce conflict (reduce 25, reduce 26) on ')'
+37: reduce/reduce conflict (reduce 25, reduce 26) on '\n'
+state 37
 	real : NUMBER .  (25)
 	real : '-' NUMBER .  (26)
 
 	.  reduce 25
 
 
-state 37
+state 38
 	expr : '-' expr .  (36)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -548,7 +567,7 @@ state 37
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'^'  shift 48
+	'^'  shift 49
 	NUMBER  reduce 36
 	XL  reduce 36
 	YL  reduce 36
@@ -563,45 +582,45 @@ state 37
 	'\n'  reduce 36
 
 
-state 38
+state 39
 	real : '-' . NUMBER  (26)
 
-	NUMBER  shift 60
-	.  error
-
-
-state 39
-	coord : real . ',' expr  (43)
-
-	','  shift 61
+	NUMBER  shift 61
 	.  error
 
 
 state 40
-	coord_list : coord . coord  (44)
+	coord : real . ',' expr  (43)
 
-	NUMBER  shift 4
-	'-'  shift 38
+	','  shift 62
 	.  error
-
-	real  goto 39
-	coord  goto 62
 
 
 state 41
+	coord_list : coord . coord  (44)
+
+	NUMBER  shift 4
+	'-'  shift 39
+	.  error
+
+	real  goto 40
+	coord  goto 63
+
+
+state 42
 	expr : '{' coord_list . '}'  (29)
 	coord_list : coord_list . coord  (45)
 
 	NUMBER  shift 4
-	'-'  shift 38
-	'}'  shift 63
+	'-'  shift 39
+	'}'  shift 64
 	.  error
 
-	real  goto 39
-	coord  goto 64
+	real  goto 40
+	coord  goto 65
 
 
-state 42
+state 43
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
 	expr : expr . '*' expr  (39)
@@ -609,131 +628,131 @@ state 42
 	expr : expr . '^' expr  (41)
 	expr : '(' expr . ')'  (42)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
-	')'  shift 65
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
+	')'  shift 66
 	.  error
 
 
-state 43
+state 44
 	expr : real I .  (28)
 
 	.  reduce 28
 
 
-state 44
+state 45
 	expr : expr '+' . expr  (37)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 66
-
-
-state 45
-	expr : expr '-' . expr  (38)
-
-	I  shift 3
-	NUMBER  shift 4
-	VAR  shift 30
-	BLTIN  shift 6
-	'+'  shift 13
-	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
-	.  error
-
-	real  goto 18
+	real  goto 19
 	expr  goto 67
 
 
 state 46
-	expr : expr '*' . expr  (39)
+	expr : expr '-' . expr  (38)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
+	real  goto 19
 	expr  goto 68
 
 
 state 47
-	expr : expr '/' . expr  (40)
+	expr : expr '*' . expr  (39)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
+	real  goto 19
 	expr  goto 69
 
 
 state 48
-	expr : expr '^' . expr  (41)
+	expr : expr '/' . expr  (40)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
+	real  goto 19
 	expr  goto 70
 
 
 state 49
+	expr : expr '^' . expr  (41)
+
+	I  shift 3
+	NUMBER  shift 4
+	VAR  shift 31
+	BLTIN  shift 6
+	'+'  shift 13
+	'-'  shift 14
+	'{'  shift 16
+	'('  shift 17
+	.  error
+
+	real  goto 19
+	expr  goto 71
+
+
+state 50
 	list : list expr eos .  (5)
 
 	.  reduce 5
 
 
-state 50
+state 51
 	list : list asgn eos .  (4)
 
 	.  reduce 4
 
 
-state 51
+state 52
 	list : list pr eos .  (3)
 
 	.  reduce 3
 
 
-state 52
+state 53
 	list : list gr eos .  (6)
 
 	.  reduce 6
 
 
-state 53
+state 54
 	asgn : VAR '=' expr .  (24)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -741,15 +760,16 @@ state 53
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
+	';'  reduce 24
 	'\n'  reduce 24
 
 
-state 54
+state 55
 	expr : VAR '(' expr . ')'  (32)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -757,16 +777,16 @@ state 54
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
-	')'  shift 71
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
+	')'  shift 72
 	.  error
 
 
-state 55
+state 56
 	expr : BLTIN '(' expr . ',' expr ')'  (33)
 	expr : BLTIN '(' expr . ')'  (34)
 	expr : expr . '+' expr  (37)
@@ -775,17 +795,17 @@ state 55
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
-	','  shift 72
-	')'  shift 73
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
+	','  shift 73
+	')'  shift 74
 	.  error
 
 
-state 56
+state 57
 	plotspec : expr .  (17)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -793,11 +813,11 @@ state 56
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
 	XL  reduce 17
 	YL  reduce 17
 	';'  reduce 17
@@ -805,86 +825,87 @@ state 56
 	'\n'  reduce 17
 
 
-state 57
+58: shift/reduce conflict (shift 75, reduce 13) on ';'
+state 58
 	gr : GR $$1 plotlist .  (13)
 	plotlist : plotlist . plotsep plotspec  (15)
 
-	';'  shift 74
+	';'  shift 75
 	'\n'  reduce 13
 
-	plotsep  goto 75
+	plotsep  goto 76
 
 
-state 58
+state 59
 	plotlist : plotspec .  (14)
 	plotspec : plotspec . ',' expr  (18)
 	plotspec : plotspec . xl  (19)
 	plotspec : plotspec . yl  (20)
 
-	XL  shift 76
-	YL  shift 77
-	','  shift 78
+	XL  shift 77
+	YL  shift 78
+	','  shift 79
 	';'  reduce 14
 	'\n'  reduce 14
 
-	xl  goto 79
-	yl  goto 80
+	xl  goto 80
+	yl  goto 81
 
 
-state 59
+state 60
 	list : list CI STRING eos .  (8)
 
 	.  reduce 8
 
 
-state 60
+state 61
 	real : '-' NUMBER .  (26)
 
 	.  reduce 26
 
 
-state 61
+state 62
 	coord : real ',' . expr  (43)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 81
+	real  goto 19
+	expr  goto 82
 
 
-state 62
+state 63
 	coord_list : coord coord .  (44)
 
 	.  reduce 44
 
 
-state 63
+state 64
 	expr : '{' coord_list '}' .  (29)
 
 	.  reduce 29
 
 
-state 64
+state 65
 	coord_list : coord_list coord .  (45)
 
 	.  reduce 45
 
 
-state 65
+state 66
 	expr : '(' expr ')' .  (42)
 
 	.  reduce 42
 
 
-state 66
+state 67
 	expr : expr . '+' expr  (37)
 	expr : expr '+' expr .  (37)
 	expr : expr . '-' expr  (38)
@@ -892,9 +913,9 @@ state 66
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
 	NUMBER  reduce 37
 	XL  reduce 37
 	YL  reduce 37
@@ -907,7 +928,7 @@ state 66
 	'\n'  reduce 37
 
 
-state 67
+state 68
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
 	expr : expr '-' expr .  (38)
@@ -915,9 +936,9 @@ state 67
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
 	NUMBER  reduce 38
 	XL  reduce 38
 	YL  reduce 38
@@ -930,7 +951,7 @@ state 67
 	'\n'  reduce 38
 
 
-state 68
+state 69
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
 	expr : expr . '*' expr  (39)
@@ -938,7 +959,7 @@ state 68
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'^'  shift 48
+	'^'  shift 49
 	NUMBER  reduce 39
 	XL  reduce 39
 	YL  reduce 39
@@ -953,7 +974,7 @@ state 68
 	'\n'  reduce 39
 
 
-state 69
+state 70
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
 	expr : expr . '*' expr  (39)
@@ -961,7 +982,7 @@ state 69
 	expr : expr '/' expr .  (40)
 	expr : expr . '^' expr  (41)
 
-	'^'  shift 48
+	'^'  shift 49
 	NUMBER  reduce 40
 	XL  reduce 40
 	YL  reduce 40
@@ -976,7 +997,7 @@ state 69
 	'\n'  reduce 40
 
 
-state 70
+state 71
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
 	expr : expr . '*' expr  (39)
@@ -984,7 +1005,7 @@ state 70
 	expr : expr . '^' expr  (41)
 	expr : expr '^' expr .  (41)
 
-	'^'  shift 48
+	'^'  shift 49
 	NUMBER  reduce 41
 	XL  reduce 41
 	YL  reduce 41
@@ -999,124 +1020,124 @@ state 70
 	'\n'  reduce 41
 
 
-state 71
+state 72
 	expr : VAR '(' expr ')' .  (32)
 
 	.  reduce 32
 
 
-state 72
+state 73
 	expr : BLTIN '(' expr ',' . expr ')'  (33)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 82
+	real  goto 19
+	expr  goto 83
 
 
-state 73
+state 74
 	expr : BLTIN '(' expr ')' .  (34)
 
 	.  reduce 34
 
 
-state 74
+state 75
 	plotsep : ';' .  (16)
 
 	.  reduce 16
 
 
-state 75
+state 76
 	plotlist : plotlist plotsep . plotspec  (15)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 56
-	plotspec  goto 83
+	real  goto 19
+	expr  goto 57
+	plotspec  goto 84
 
 
-state 76
+state 77
 	xl : XL . expr ',' expr  (21)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 84
-
-
-state 77
-	yl : YL . expr ',' expr  (22)
-
-	I  shift 3
-	NUMBER  shift 4
-	VAR  shift 30
-	BLTIN  shift 6
-	'+'  shift 13
-	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
-	.  error
-
-	real  goto 18
+	real  goto 19
 	expr  goto 85
 
 
 state 78
-	plotspec : plotspec ',' . expr  (18)
+	yl : YL . expr ',' expr  (22)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
+	real  goto 19
 	expr  goto 86
 
 
 state 79
+	plotspec : plotspec ',' . expr  (18)
+
+	I  shift 3
+	NUMBER  shift 4
+	VAR  shift 31
+	BLTIN  shift 6
+	'+'  shift 13
+	'-'  shift 14
+	'{'  shift 16
+	'('  shift 17
+	.  error
+
+	real  goto 19
+	expr  goto 87
+
+
+state 80
 	plotspec : plotspec xl .  (19)
 
 	.  reduce 19
 
 
-state 80
+state 81
 	plotspec : plotspec yl .  (20)
 
 	.  reduce 20
 
 
-81: shift/reduce conflict (shift 45, reduce 43) on '-'
-state 81
+82: shift/reduce conflict (shift 46, reduce 43) on '-'
+state 82
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
 	expr : expr . '*' expr  (39)
@@ -1124,16 +1145,16 @@ state 81
 	expr : expr . '^' expr  (41)
 	coord : real ',' expr .  (43)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
 	NUMBER  reduce 43
 	'}'  reduce 43
 
 
-state 82
+state 83
 	expr : BLTIN '(' expr ',' expr . ')'  (33)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -1141,32 +1162,32 @@ state 82
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
-	')'  shift 87
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
+	')'  shift 88
 	.  error
 
 
-state 83
+state 84
 	plotlist : plotlist plotsep plotspec .  (15)
 	plotspec : plotspec . ',' expr  (18)
 	plotspec : plotspec . xl  (19)
 	plotspec : plotspec . yl  (20)
 
-	XL  shift 76
-	YL  shift 77
-	','  shift 78
+	XL  shift 77
+	YL  shift 78
+	','  shift 79
 	';'  reduce 15
 	'\n'  reduce 15
 
-	xl  goto 79
-	yl  goto 80
+	xl  goto 80
+	yl  goto 81
 
 
-state 84
+state 85
 	xl : XL expr . ',' expr  (21)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -1174,16 +1195,16 @@ state 84
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
-	','  shift 88
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
+	','  shift 89
 	.  error
 
 
-state 85
+state 86
 	yl : YL expr . ',' expr  (22)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -1191,16 +1212,16 @@ state 85
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
-	','  shift 89
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
+	','  shift 90
 	.  error
 
 
-state 86
+state 87
 	plotspec : plotspec ',' expr .  (18)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -1208,11 +1229,11 @@ state 86
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
 	XL  reduce 18
 	YL  reduce 18
 	';'  reduce 18
@@ -1220,47 +1241,47 @@ state 86
 	'\n'  reduce 18
 
 
-state 87
+state 88
 	expr : BLTIN '(' expr ',' expr ')' .  (33)
 
 	.  reduce 33
 
 
-state 88
+state 89
 	xl : XL expr ',' . expr  (21)
 
 	I  shift 3
 	NUMBER  shift 4
-	VAR  shift 30
+	VAR  shift 31
 	BLTIN  shift 6
 	'+'  shift 13
 	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
+	'{'  shift 16
+	'('  shift 17
 	.  error
 
-	real  goto 18
-	expr  goto 90
-
-
-state 89
-	yl : YL expr ',' . expr  (22)
-
-	I  shift 3
-	NUMBER  shift 4
-	VAR  shift 30
-	BLTIN  shift 6
-	'+'  shift 13
-	'-'  shift 14
-	'{'  shift 15
-	'('  shift 16
-	.  error
-
-	real  goto 18
+	real  goto 19
 	expr  goto 91
 
 
 state 90
+	yl : YL expr ',' . expr  (22)
+
+	I  shift 3
+	NUMBER  shift 4
+	VAR  shift 31
+	BLTIN  shift 6
+	'+'  shift 13
+	'-'  shift 14
+	'{'  shift 16
+	'('  shift 17
+	.  error
+
+	real  goto 19
+	expr  goto 92
+
+
+state 91
 	xl : XL expr ',' expr .  (21)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -1268,11 +1289,11 @@ state 90
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
 	XL  reduce 21
 	YL  reduce 21
 	';'  reduce 21
@@ -1280,7 +1301,7 @@ state 90
 	'\n'  reduce 21
 
 
-state 91
+state 92
 	yl : YL expr ',' expr .  (22)
 	expr : expr . '+' expr  (37)
 	expr : expr . '-' expr  (38)
@@ -1288,11 +1309,11 @@ state 91
 	expr : expr . '/' expr  (40)
 	expr : expr . '^' expr  (41)
 
-	'+'  shift 44
-	'-'  shift 45
-	'*'  shift 46
-	'/'  shift 47
-	'^'  shift 48
+	'+'  shift 45
+	'-'  shift 46
+	'*'  shift 47
+	'/'  shift 48
+	'^'  shift 49
 	XL  reduce 22
 	YL  reduce 22
 	';'  reduce 22
@@ -1300,9 +1321,10 @@ state 91
 	'\n'  reduce 22
 
 
-State 36 contains 14 reduce/reduce conflicts.
-State 81 contains 1 shift/reduce conflict.
+State 37 contains 14 reduce/reduce conflicts.
+State 58 contains 1 shift/reduce conflict.
+State 82 contains 1 shift/reduce conflict.
 
 
 31 terminals, 16 nonterminals
-47 grammar rules, 92 states
+48 grammar rules, 93 states
