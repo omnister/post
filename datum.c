@@ -642,7 +642,40 @@ DATUM * Sqrt(DATUM *a, DATUM *b) {
 }
 
 DATUM * Avg(DATUM *a, DATUM *b) {
-    return(binary(AVG, a, b));
+
+    DATUM *tmp;
+    DATUM *pd;
+    double miniv, maxiv;
+    double re, re2, im, im2, iv, iv2;
+    double reintegral=0.0;
+    double imintegral=0.0;
+
+    if (b != NULL) {
+       return(binary(AVG, a, b));
+    } else {
+	if (a->next == NULL) {
+	   return(dup_dat(a));
+	}
+        miniv=a->iv;
+	maxiv=a->prev->iv;
+
+	re2=a->re; 
+	im2=a->im; 
+	iv2=a->iv;
+	for (pd=a->next; pd!=NULL; pd=pd->next) {
+	    re=pd->re; 
+	    im=pd->im; 
+	    iv=pd->iv;
+	    /* trapezoidal integration */
+	    imintegral+=(iv-iv2)*(im+im2)/2.0;
+	    reintegral+=(iv-iv2)*(re+re2)/2.0;
+	    re2 = re;
+	    im2 = im;
+	    iv2 = iv;
+	}
+	tmp = new_dat(reintegral/(maxiv-miniv), imintegral/(maxiv-miniv));
+	return(tmp);
+    }
 }
 
 DATUM * Max(DATUM *a, DATUM *b) {

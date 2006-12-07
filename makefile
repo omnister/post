@@ -15,7 +15,7 @@ TARS = HELP README COPYING makefile $(SRCS) $(DEMOS) $(HEADERS) $(EXTRAS) $(EXAM
 CCFLAGS = -ggdb -Wall
 
 post:	$(OBJS) 
-	cc $(CCFLAGS) $(OBJS) -lm -o post -lreadline -g -lncurses
+	cc $(CCFLAGS) $(OBJS) -lm -o post -lreadline -g -ltermcap
 
 .c.o:
 	cc $(CCFLAGS) -c $*.c   

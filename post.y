@@ -80,7 +80,6 @@ list:	/* empty */
 /****************************************/
 
 gr: 	     GR {graphinit();} plotlist { 
-		/* graphprint_ap(0); */
 		graphprint_gnu(0);
 	     };
 

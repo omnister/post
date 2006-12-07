@@ -5,6 +5,8 @@
 #include <time.h>
 #include <sys/time.h>
 
+#define GNUPLOT "gnuplot -geometry +0+0 -bg white"
+
 typedef struct plotspec {
     int newgraph;	/* set to 1 for a new graph */
     double xlmin;	
@@ -78,7 +80,7 @@ void graphyl(double ylmin, double ylmax) {
    p->ylmax = ylmax;
 }
 
-void graphprint_ap(int mode) {		/* autoplot */
+void graphprint(int mode) {		/* autoplot */
     PLOTSPEC *p;
     DATUM *pd;
     int i;
@@ -99,13 +101,13 @@ void graphprint_ap(int mode) {		/* autoplot */
 
     switch(mode) {
 	case 0:
-	    if (scriptopen("ap", NULL) == 0) { 
+	    if (scriptopen("ap") == 0) { 
 	       printf("can't open autoplot!\n");
 	       return;
 	    } 
 	    break;
 	case 1:
-	    if (scriptopen("ap", "-n") == 0) { 
+	    if (scriptopen("ap -n") == 0) { 
 	       printf("can't open autoplot!\n");
 	       return;
 	    }
@@ -220,7 +222,7 @@ void graphprint_gnu(int mode) {		/* gnuplot */
     char *pn;
     double ngraphs;
 
-    system("killall gnuplot_x11");
+    system("killall gnuplot_x11 >/dev/null 2>&1");
 
     plottime = time(NULL);
     strftime(buf, MAXBUF, "%m/%d/%y-%H:%M:%S", localtime(&plottime));
@@ -230,7 +232,7 @@ void graphprint_gnu(int mode) {		/* gnuplot */
 	sprintf(title, "title %s - %s\n", pn, buf);
     }
 
-    if (scriptopen("gnuplot", NULL) == 0) { 
+    if (scriptopen(GNUPLOT) == 0) { 
        printf("can't open gnuplot!\n");
        return;
     } 

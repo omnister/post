@@ -32,12 +32,12 @@ void syserr(char *msg) {
     exit(1);
 }
 
-int scriptopen(char* prog, char *arg)
+int scriptopen(char* prog)
 {
     int pfdout[2], pfdin[2];
     char *msg;
     int err=0;
-    
+
     /*
     if (scriptfeed("reset \n")) {
        printf("running\n");
@@ -67,7 +67,8 @@ int scriptopen(char* prog, char *arg)
 	    if (close(pfdin[0]) == -1)   {err++; msg="close 9" ; break;};
 	    if (close(pfdin[1]) == -1)   {err++; msg="close 10"; break;};
 
-	    execlp(prog, prog, arg, NULL); 	/* thus passes control to child */
+	    system(prog); 	/* thus passes control to child */
+	    /* execlp(prog, prog, arg, NULL); 	thus passes control to child */
 	    err++; msg="execlp"; break;	/* should only get here if execlp fails */
 
 	} while (0); if (err) return(0);
@@ -91,7 +92,6 @@ int scriptopen(char* prog, char *arg)
 
     return(1);	/* success */
 }
-
 
 void onalarm() 	/* kill child process on alarm */
 {

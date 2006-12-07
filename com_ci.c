@@ -86,5 +86,6 @@ int com_ci(char *rawfile)
 
 	install(buf, VAR, result);
     }
+    wf_free(wf);
     return(0);
 }

@@ -1,7 +1,7 @@
 
 /* scripting support functions */
 
-int scriptopen(char* prog, char *arg);	/* set arg null if not used */
+int scriptopen(char* prog);
 int scriptclose();
 int scriptfeed(char *msg);
 int scriptread(char *buf, int n, int timeout);
