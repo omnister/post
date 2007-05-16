@@ -768,6 +768,47 @@ DATUM * Integral(DATUM *a, DATUM *b) {
     return(result);
 }
 
+DATUM * ui(DATUM *a, DATUM *b) {
+    DATUM *pd;
+    DATUM *result=NULL;
+    DATUM *tmp;
+    double re, re2, iv, iv2;
+    double oldtcross;
+    double tcross;
+    int cross = 0;
+    int debug=0;
+
+    if (b != NULL) {
+       printf("function takes only one argument!\n");
+       return(NULL);
+    }
+
+    if (a->next == NULL) {
+       return(new_dat(0.0, 0.0));
+    }
+
+    re=a->re; 
+    iv=a->iv;
+    for (pd=a->next; pd!=NULL; pd=pd->next) {
+	re2 = re; re=pd->re; 
+	iv2 = iv; iv=pd->iv; 
+        
+	// if ((re2 < 0 && re >= 0) || (re2 > 0 && re <= 0)) {
+	if ((re2 < 0 && re >= 0)) {
+	    oldtcross = tcross;
+	    tcross = (iv2 + (iv-iv2)*(0.0-re2)/(re-re2));
+	    if (debug) printf("%g %g %g %g %g\n", iv2, re2, iv, re, tcross);
+	    cross++;
+	    if (cross > 1) {
+		tmp = new_dat(tcross-oldtcross, 0.0);
+		tmp->iv = (double) iv;
+		result = link_dat(result, tmp);
+	    }
+	}
+    }
+    return(result);
+}
+
 DATUM * xcross(DATUM *a, DATUM *b) {
     DATUM *pd;
     DATUM *result=NULL;

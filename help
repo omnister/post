@@ -84,13 +84,13 @@ You can plot two groups of variables on separate axes with
 
 	: gr a,b,c ; d, e, f
 
-You can limit the xaxis range with "xl <start> <stop>".  This
+You can limit the xaxis range with "xl <start>,<stop>".  This
 will apply to all axes.  If xl is used twice on a command line,
 the last one will take precedence:
 
-	: gr a,b ; d,e xl .1 1.8
+	: gr a,b ; d,e xl .1,1.8
 
-Finally, each graph can have its yaxis range set with "yl <min> <max>"
+Finally, each graph can have its yaxis range set with "yl <min>,<max>"
 
 	: gr a,b yl -1,1; d,e yl -2,2 xl .1,1.8
 
@@ -287,6 +287,12 @@ the output.  This allows the max/min functions to be used as a multiplexer.
 			; set p3.re=xc.  If n==0, return all zero
 			; crossings as a PWL with iv set to n, .re set to crossing
 			; time.  Can then extract nth crossing with p3(n).
+
+    p2=u1(p1)		; compute the value of the unit interval as a function of time:
+                        ; for every pair of positive zero crossings in p1, create
+    			; a data point in p2 with iv set to the iv of the second zero
+			; crossing and the dv set to the time between the two crossings.
+			; for a vco, frequency is 1/ui(vout)
 
 # resampling / filtering
 

@@ -2,6 +2,9 @@
  * com_ci(), check in a spice raw file  
  *
  * $Log: com_ci.c,v $
+ * Revision 1.1  2007/05/17 06:05:54  walker
+ * Initial revision
+ *
  * Revision 1.1  2005/08/03 15:56:17  walker
  * Initial revision
  *

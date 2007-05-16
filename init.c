@@ -76,6 +76,7 @@ static struct {	    /* built-ins */
     {"sqrt", 	   Sqrt},	/* binop */
     {"warp", 	   Warp},	/* binop */
     {"delay", 	   Warp},	/* binop */
+    {"ui", 	   ui},	
     {"xcross", 	   xcross},	/* binop */
     {"xcrossn",    xcrossn},	/* binop */
     {"xcrossp",    xcrossp},	/* binop */
