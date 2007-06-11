@@ -288,11 +288,11 @@ the output.  This allows the max/min functions to be used as a multiplexer.
 			; crossings as a PWL with iv set to n, .re set to crossing
 			; time.  Can then extract nth crossing with p3(n).
 
-    p2=u1(p1)		; compute the value of the unit interval as a function of time:
+    p2=ui(p1)		; compute the value of the unit interval as a function of time:
                         ; for every pair of positive zero crossings in p1, create
     			; a data point in p2 with iv set to the iv of the second zero
 			; crossing and the dv set to the time between the two crossings.
-			; for a vco, frequency is 1/ui(vout)
+			; eg: for a VCO, frequency can be approximated by 1/ui(vout)
 
 # resampling / filtering
 
