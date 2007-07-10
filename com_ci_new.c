@@ -1,7 +1,7 @@
 /*
  * com_ci(), check in a spice raw file  
  *
- * $Log: com_ci.c,v $
+ * $Log: com_ci_new.c,v $
  * Revision 1.1  2007/05/17 06:05:54  walker
  * Initial revision
  *
@@ -75,13 +75,10 @@ int com_ci(char *rawfile)
 		tmp=new_dat(re,im);
 		tmp->iv = iv;
 		result = link_dat(result, tmp);
-
-	    } else if (j>2 && (!collinear(iv2,re2, iv1,re1, iv,re) || !collinear(iv2,im2, iv1,im1, iv,im))) { 
-
+	    } else if (j>2 && !collinear(iv2,re2, iv1,re1, iv,re)) {
 		tmp=new_dat(re1,im1);
 		tmp->iv = iv1;
 		result = link_dat(result, tmp);
-
 	    }
 	    iv2 = iv1; iv1 = iv;
 	    re2 = re1; re1 = re;

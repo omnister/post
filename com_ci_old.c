@@ -1,7 +1,7 @@
 /*
  * com_ci(), check in a spice raw file  
  *
- * $Log: com_ci.c,v $
+ * $Log: com_ci_old.c,v $
  * Revision 1.1  2007/05/17 06:05:54  walker
  * Initial revision
  *
@@ -26,7 +26,6 @@ char *rawfile_name() {
     return(rawfilename);
 }
 
-
 int com_ci(char *rawfile)
 {
     WaveFile *wf;
@@ -35,9 +34,6 @@ int com_ci(char *rawfile)
     char buf[128];
     char *t,*s;
     int c;
-    double re, im,  iv;
-    double re1,im1, iv1;
-    double re2,im2, iv2;
 
     DATUM *tmp;
     DATUM *result;
@@ -57,39 +53,21 @@ int com_ci(char *rawfile)
         for (j = 0; j < wf->nvalues; j++) {
 	    switch (wf->dv[i].wv_ncols) {
 	    case 1:
-		re=wds_get_point(&wf->dv[i].wds[0], j);
-		im=0.0;
+		tmp=new_dat(wds_get_point(&wf->dv[i].wds[0], j),0.0);
 		break;
 	    case 2:
-		re=wds_get_point(&wf->dv[i].wds[0], j);
-		im=wds_get_point(&wf->dv[i].wds[1], j);
+		tmp=new_dat(
+			wds_get_point(&wf->dv[i].wds[0], j),
+			wds_get_point(&wf->dv[i].wds[1], j));
 		break;
 	    default:
 		fprintf(stderr, "bad number of columns\n");
 		exit(1);
 		break;
 	    }
-	    iv = wds_get_point(wf->iv->wds, j);
-
-	    if (j<2) {
-		tmp=new_dat(re,im);
-		tmp->iv = iv;
-		result = link_dat(result, tmp);
-
-	    } else if (j>2 && (!collinear(iv2,re2, iv1,re1, iv,re) || !collinear(iv2,im2, iv1,im1, iv,im))) { 
-
-		tmp=new_dat(re1,im1);
-		tmp->iv = iv1;
-		result = link_dat(result, tmp);
-
-	    }
-	    iv2 = iv1; iv1 = iv;
-	    re2 = re1; re1 = re;
-	    im2 = im1; im1 = im;
+	    tmp->iv = wds_get_point(wf->iv->wds, j);
+	    result = link_dat(result, tmp);
 	}
-	tmp=new_dat(re1,im1);
-	tmp->iv = iv1;
-	result = link_dat(result, tmp);
 
 	s=wf->dv[i].wv_name;
 	t=buf;

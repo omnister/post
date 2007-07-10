@@ -79,19 +79,6 @@ void graphyl(double ylmin, double ylmax) {
    p->ylmax = ylmax;
 }
 
-int collinear(x1,y1, x2,y2, x3,y3) 
-double x1,y1,x2,y2,x3,y3;
-{
-    double val;
-    val = (x3-x1)*(y2-y1) - (y3-y1)*(x2-x1);
-
-    if (val == 0.0) {
-       return(1);
-    } else {
-       return(0);
-    }
-}
-
 void graphprint(int mode) {		/* autoplot */
     PLOTSPEC *p;
     DATUM *pd;
@@ -99,11 +86,9 @@ void graphprint(int mode) {		/* autoplot */
     char buf[128];
     time_t plottime;
     int count=0;
-    int npts=0;
     double max,min,range, scale;
     char name[128];
     char *pn;
-    double x1, y1, x2, y2;
 
     plottime = time(NULL);
     strftime(buf, MAXBUF, "%m/%d/%y-%H:%M:%S", localtime(&plottime));
@@ -203,26 +188,20 @@ void graphprint(int mode) {		/* autoplot */
 	}
 	if (p->newgraph) {
 	  count=0;
-	  npts=0;
 	  sprintf(buf, "nextygraph\n");
 	  scriptfeed(buf);
 	}
 	if (p->datum != NULL) {
+	    if (count == 0) {
+		max=min=p->datum->iv;
+	    }
 	    count++;
 	    for (pd=p->datum; pd!=NULL; pd=pd->next) {
-		if (npts < 2) {
-		    sprintf(buf, "%g %g\n", pd->iv, pd->re);
-		    scriptfeed(buf);
-		} else if (npts > 2 && !collinear(x2,y2, x1,y1, pd->iv, pd->re))  {
-		    sprintf(buf, "%g %g\n", x1, y1);
-		    scriptfeed(buf);
-		}
-		x2 = x1; x1 = pd->iv;
-		y2 = y1; y1 = pd->re;
-		npts++;
+		if (max<pd->iv) max=pd->iv;
+		if (min>pd->iv) min=pd->iv;
+		sprintf(buf, "%g %g\n", pd->iv, pd->re);
+		scriptfeed(buf);
 	    }
-	    sprintf(buf, "%g %g\n", x1, y1);
-	    scriptfeed(buf);
 	    sprintf(buf, "label -12%% %d%% %s\n", (int) (100.0-count*10.0), p->datum->def);
 	    scriptfeed(buf);
 	}
