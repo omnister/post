@@ -1,10 +1,3 @@
-/**********************************************************************
- * These functions are copyright 2005 by Richard C. Walker They may not be
- * used in whole or part without permission of the owner.  Permission is
- * granted to compile and evaluate these functions for review purposes
- * only.  License inquiries should be directed to walker@omnisterra.com
- ************************************************************************/
-
 #include "script.h"
 
 #include <stdio.h>

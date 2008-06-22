@@ -1277,15 +1277,22 @@ DATUM * dt(DATUM *a, DATUM *b) {
     d = Warp(a, &arg);
 
     e = binary(SUB, c, d);
-    free_dat(c);
-    free_dat(d);
 
-    arg.re = 1.0/dt;
+    if (e == NULL) {
+        printf("dt() has no output, perhaps global DT value (%g) is wrong?\n", dt);
+        return(NULL);
+        free_dat(c);
+        free_dat(d);
+    } else {
+	free_dat(c);
+	free_dat(d);
 
-    c = binary(MULT, e, &arg);
-    free_dat(e);
+	arg.re = 1.0/dt;
+	c = binary(MULT, e, &arg);
+	free_dat(e);
 
-    return(c);
+	return(c);
+    }
 }
 
 DATUM * dopause(DATUM *a, DATUM *b) {		/* ansi already has a pause() command */

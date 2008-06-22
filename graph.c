@@ -19,7 +19,7 @@ int debug = 0;
 int digest = 1; 	/* set to 1 for quick non-zoomable plots */
 
 #define MAXPLOTELEMENTS 128
-#define MAXBUF 128
+#define MAXBUF 1024
 
 PLOTSPEC plottab[MAXPLOTELEMENTS];
 
@@ -60,7 +60,9 @@ void graphnext() {
 
 void graphexpr(DATUM *d) {
    if (debug) printf("in graphexpr()\n");
-   plottab[num++].datum = dup_dat(d);
+   if (d!=NULL) {
+       plottab[num++].datum = dup_dat(d);
+   } 
 }
 
 void graphxl(double xlmin, double xlmax) {
@@ -92,11 +94,11 @@ double x1,y1,x2,y2,x3,y3;
     }
 }
 
-void graphprint(int mode) {		/* autoplot */
+void graphprint_ap(int mode) {		/* autoplot */
     PLOTSPEC *p;
     DATUM *pd;
     int i;
-    char buf[128];
+    char buf[1024];
     time_t plottime;
     int count=0;
     int npts=0;
@@ -108,9 +110,9 @@ void graphprint(int mode) {		/* autoplot */
     plottime = time(NULL);
     strftime(buf, MAXBUF, "%m/%d/%y-%H:%M:%S", localtime(&plottime));
     if ((pn=rawfile_name()) == NULL) {
-	sprintf(title, "title <stdin> - %s\n", buf);
+	snprintf(title, MAXBUF, "title <stdin> - %s\n", buf);
     } else {
-	sprintf(title, "title %s - %s\n", pn, buf);
+	snprintf(title, MAXBUF, "title %s - %s\n", pn, buf);
     }
 
     switch(mode) {
@@ -248,7 +250,7 @@ void graphprint_gnu(int mode) {		/* gnuplot */
 	sprintf(title, "title %s - %s\n", pn, buf);
     }
 
-    if (scriptopen("gnuplot", "-geometry +0+0", "-bg white") == 0) {
+    if (scriptopen("gnuplot", "-geometry", "+0+0") == 0) {
        printf("can't open gnuplot!\n");
        return;
     } 

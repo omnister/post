@@ -4,7 +4,9 @@
  *   PD_Post: a SPICE post-processor/calculator 
  *   for viewing and measuring piece-wise-linear waveform files
  *
- *   Copyright (C) 2006  by Richard C. Walker.
+ *   Copyright (C) 2006-2007  by Richard C. Walker.
+ *   Copyright (C) 1998-2002  Stephen G. Tell.
+ *   Copyright 1998 D. Jeff Dionne.
  *
  *   Author's email: walker AT omnisterra DOT com
  *   Post homepage: http://www.omnisterra.com/walker/linux
@@ -26,7 +28,9 @@ void license() {
     printf("    PD_Post: a SPICE post-processor/calculator for\n");
     printf("    viewing and measuring piece-wise-linear waveforms.\n");
     printf("\n");
-    printf("    Copyright (C) 2006  by Richard C. Walker.\n");
+    printf("    Copyright (C) 2006-2007  by Richard C. Walker.\n");
+    printf("    Copyright (C) 1998-2002  Stephen G. Tell.\n");
+    printf("    Copyright 1998 D. Jeff Dionne.\n");
     printf("\n");
     printf("    Author's email: walker AT omnisterra DOT com\n");
     printf("    Homepage: http://www.omnisterra.com/walker/linux/\n");
