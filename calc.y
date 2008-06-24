@@ -1,15 +1,10 @@
+
 /* complex waveform calculator */
-/* I must have *, 3I not allowed anymore */
-/* need to add back yvalue() */
 
 %{
 
-#include "post.h"
+#include "calc.h"
 #include "script.h"
-#define YYDEBUG 1
-
-char buf[128];
-
 
 %}
 
@@ -24,39 +19,50 @@ char buf[128];
 %token <y_sym>   VAR BLTIN UNDEF STRING
 %token <y_sym>   GR
 %token <y_sym>   GS
-%token <y_sym>   XL
-%token <y_sym>   YL
+%token <y_sym>   GN
 %token <y_sym>   LS 
-%token <y_sym>   PR
 %token <y_sym>   CI
 %token <y_sym>   DI 
-%token <y_sym>   QUIT 
 %type  <y_datum> expr
 %type  <y_datum> asgn
-%type  <y_datum> pr 
+%type  <y_datum> fxn
+%type  <y_datum> gr
+%type  <y_datum> gs
+%type  <y_datum> gn
 %type  <y_datum> coord
 %type  <y_datum> coord_list
 %right '='
 %left '+' '-'
 %left '*' '/'
-%nonassoc UNARYMINUS UNARYPLUS
+%left UNARYMINUS UNARYPLUS
 %right '^'	/* exponentiation */
 %%
 
 list:	/* empty */
 	| list eos
-	| list pr eos {
-		print_dat($2);
-		free_dat($2);
-	    }
-	| list asgn eos { 
-		free_dat($2);
-	    }
+	| list asgn eos { free_dat($2); }
 	| list expr eos { 
+		if (dat_stat() != 1) {
+		    /* printf("memory leak: %d\n", dat_stat()); */
+		}
 		print_dat($2);
+		free_dat($2);
+	    }
+	| list fxn eos	{ 
+		print_dat($2);
+		free_dat($2);
+	    }
+	| list gs eos {
+		plot_dat($2,0);
 		free_dat($2);
 	    }
 	| list gr eos {
+		plot_dat($2,1);
+		free_dat($2);
+	    }
+	| list gn eos {
+		plot_dat($2,2);
+		free_dat($2);
 	    }
 	| list LS eos {
 		ls();
@@ -65,202 +71,117 @@ list:	/* empty */
 		printf("loading %s\n", (char *) $3);
 		com_ci((char *) $3);
 	    }
-	| list QUIT eos {
-		exit(1);
-	    }
 	| list DI eos {
 		symprint();
 	    }
-	| list error eos {
-		yyclearin;
-		yyerrok; 
-	    }
+	| list error eos	{ yyerrok; }
 	;
 
-/****************************************/
+gs:	GS expr	{ $$ = $2; }
 
-gr: 	     GR {graphinit();} plotlist { 
-		/* graphprint_gnu(0); */
-		graphprint(0);
-	     };
+gr:	GR expr	{ $$ = $2; }
 
-plotlist:  plotspec 
-	   | plotlist plotsep plotspec; 
-	   ;
+gn:	GN expr	{ $$ = $2; }
 
-plotsep:  ';' {
-		graphnext();
-             };
-
-plotspec:  expr {
-	   	graphexpr($1);
-		free_dat($1);
-	      };
-   	   | plotspec ',' expr {
-	   	graphexpr($3);
-		free_dat($3);
-	      };
-   	   | plotspec xl;
-	   | plotspec yl;
-	   ;
-
-xl:	   XL expr ',' expr {
-		graphxl($2->re, $4->re);
-	        free_dat($2);
-	        free_dat($4);
-             };
-yl:	   YL expr ',' expr { 
-		graphyl($2->re, $4->re);
-	        free_dat($2);
-	        free_dat($4);
-	     };
-
-/****************************************/
-
-pr:	PR expr	{ $$ = $2; }
-
-
-asgn:   VAR '=' expr    { 
-		free($1->u.val);	/* remove old value */
-		$1->u.val = $3; 	/* install new value */
-		$1->type = VAR;
-		$$ = dup_dat($3);	/* put a copy on stack */
+fxn:    VAR '(' expr ')' {
+	      $$ = interp($1->u.val, $3);
+	      free($3);
 	    }
+
+asgn:   VAR '=' expr     { 
+			    free($1->u.val);	/* remove old value */
+			    $1->u.val = $3; 	/* install new value */
+			    $1->type = VAR;
+			    $$ = dup_dat($3);	/* put a copy on stack */
+			}
         ;
 
-
-expr:	NUMBER { 
-		$$ = new_dat((double) $1,0.0); 
-		sprintf(buf, "%g", $1);
-		stringupdate($$, strsave(buf));
-	    }
-	| NUMBER I {
-		$$ = new_dat(0.0,(double) $1);
-		sprintf(buf, "%gI", $1);
-		stringupdate($$, strsave(buf));
-	    }; 
+expr:	NUMBER 		{ $$ = new_dat((double) $1,0.0); }
+	| NUMBER I      { $$ = new_dat(0.0,(double) $1); };
 	| '{' coord_list '}' { $$ = $2; }
 	| I             { $$ = new_dat(0.0, 1.0); };
-	| VAR { 
-		if ($1->type == UNDEF) 
-		execerror("undefined variable", $1->name);
-
-		$$ = dup_dat($1->u.val);
-		sprintf(buf, "%s", $1->name);
-		stringupdate($$, strsave(buf));
-	    }
-        | VAR '(' expr ')' {
-		if ($1->type == UNDEF) 
-		execerror("undefined variable", $1->name);
-
-	        $$ = interp($1->u.val, $3);
-	        sprintf(buf, "%s(%g)", $1->name, $3->re);
-		stringupdate($$, strsave(buf));
-	        free($3);
-	    }
-	| BLTIN '(' expr ',' expr ')' { 
-	        $$ = (*($1->u.ptr))($3,$5); 
-		sprintf(buf, "%s(%s,%s)", $1->name, $3->def, $5->def);
-		stringupdate($$, strsave(buf));
-	        free_dat($3); 
-	        free_dat($5); 
-	    }
-	| BLTIN '(' expr ')' {
-	        $$ = (*($1->u.ptr))($3,NULL); 
-		sprintf(buf, "%s(%s)", $1->name, $3->def);
-		stringupdate($$, strsave(buf));
-	        free_dat($3); 
-	   }
+	| VAR 		{ if ($1->type == UNDEF) 
+	                     execerror("undefined variable", $1->name);
+			  $$ = dup_dat($1->u.val);
+			}
+	| asgn
+	| BLTIN '(' expr ',' expr ')' { $$ = (*($1->u.ptr))($3,$5); 
+	                       free_dat($3); }
+	| BLTIN '(' expr ')' { $$ = (*($1->u.ptr))($3); 
+	                       free_dat($3); }
 	| '+' expr %prec UNARYPLUS {
-	        $$ = $2;
+	       $$ = $2;
 	   }
 	| '-' expr %prec UNARYMINUS {
 		DATUM *pp;
 		pp = new_dat(0.0, 0.0);
 		$$ = binary(SUB,pp,$2); 
-		sprintf(buf, "-%s", $2->def);
-		stringupdate($$, strsave(buf));
 		free_dat($2);
 		free_dat(pp);
 	    }
         | expr '+' expr { 
-		$$ = binary(ADD, $1,$3);
-		sprintf(buf, "%s+%s", $1->def, $3->def);
-		stringupdate($$, strsave(buf));
-		free_dat($1);
-		free_dat($3);
-	    }
-	| expr '-' expr {
-		$$ = binary(SUB,$1,$3); 
-		sprintf(buf, "%s-%s", $1->def, $3->def);
-		stringupdate($$, strsave(buf));
-		free_dat($1);
-		free_dat($3);
-	    }
-	| expr '*' expr { 
-		$$ = binary(MULT,$1,$3); 
-		sprintf(buf, "%s*%s", $1->def, $3->def);
-		stringupdate($$, strsave(buf));
-		free_dat($1);
-		free_dat($3);
-	    }
-	| expr '/' expr { 
-		if ($3->re == 0.0 && $3->im == 0.0) {
-		    /* clean up the stack and abort*/
+		    $$ = binary(ADD, $1,$3);
 		    free_dat($1);
 		    free_dat($3);
-		    execerror("division by zero", "");
 		}
-		$$ = binary(DIV,$1,$3); 
-		sprintf(buf, "%s/%s", $1->def, $3->def);
-		stringupdate($$, strsave(buf));
-		free_dat($1);
-		free_dat($3);
-	    }
+	| expr '-' expr {
+		    $$ = binary(SUB,$1,$3); 
+		    free_dat($1);
+		    free_dat($3);
+		}
+	| expr '*' expr { 
+		    $$ = binary(MULT,$1,$3); 
+		    free_dat($1);
+		    free_dat($3);
+		}
+	| expr '/' expr { 
+		    if ($3->re == 0.0 && $3->im == 0.0) {
+			/* clean up the stack and abort*/
+			free_dat($1);
+			free_dat($3);
+		        execerror("division by zero", "");
+		    }
+		    $$ = binary(DIV,$1,$3); 
+		    free_dat($1);
+		    free_dat($3);
+		}
 	| expr '^' expr { 
-		$$ = binary(POW, $1, $3);
-		sprintf(buf, "%s^%s", $1->def, $3->def);
-		stringupdate($$, strsave(buf));
-		free_dat($1);
-		free_dat($3);
-	    }
-	| '(' expr ')' { 
-		$$ = $2; 
-		sprintf(buf, "(%s)", $2->def);
-		stringupdate($$, strsave(buf));
-	    }
+		    $$ = binary(POW, $1, $3);
+		    free_dat($1);
+		    free_dat($3);
+	            }
+	| '(' expr ')' { $$ = $2; }
 	;
 
-coord	:  expr ',' expr {
-		$3->iv = $1->re;
+
+coord	:  NUMBER ',' expr {
+		$3->iv = $1;
 		$$ = $3;
-	    }
-	|  expr ',' expr '\n' {
-		$3->iv = $1->re;
+		}
+	|  NUMBER ',' expr eos {
+		$3->iv = $1;
 		$$ = $3;
-	    }
+		}
 	;
 
-coord_list: coord ';' coord {
-		$$ = link_dat($1,$3);
-	    }
-	|   coord_list ';' coord {
-		$$ = link_dat($1,$3);
-	    }
-	;
+coord_list: coord  coord {
+		$$ = link_dat($1,$2);
+		}
+	|	coord_list coord {
+		$$ = link_dat($1,$2);
+	}
+		;
 eos:    '\n'
+        | ';'
         ;
 %%
 
-#define _GNU_SOURCE
-#include <string.h>	/* for strsignal() */
 #include <math.h>
 #include <stdio.h>
 #include <ctype.h>
 #include "rlgetc.h"
 #include <signal.h>
 
-#define MAXSIGNAL 31	/* biggest signal under linux */
 #include <setjmp.h>
 jmp_buf begin;
 
@@ -277,59 +198,13 @@ double  getdouble();
 
 int	c;	    /* global for use by warning() */
 int     yyparse();
-		
-void stringupdate(DATUM *d, char *b) {
-   if (d!=NULL && d->def != NULL ) {
-      free(d->def);
-   } 
-   if (d!=NULL) {
-       d->def = b;
-   }
-}
-
-void sighandler(x)
-int x;
-{
-    static int last=-1;
-    extern char *strsignal();
-
-    /* printf("caught %s. Use \"quit\" to end program", strsignal(x)); */
-
-    if (x == 3) {
-       if (last==x) {
-            exit(0);
-       } else {
-            printf(": do it again and I'll die!\n");
-       }
-    }
-    last = x;
-}
-
-char *strsave(s)   /* save string s somewhere */
-char *s;
-{
-    char *p;
-
-    if (s == NULL) {
-        return(s);
-    }
-
-    if ((p = (char *) malloc(strlen(s)+1)) != NULL)
-	strcpy(p,s);
-    return(p);
-}
 
 int main(argc, argv)    /* hoc 6 */
 char *argv[];
 {
     void fpecatch();
     void run();
-    void sighandler();
     int moreinput();
-    int err=0;
-
-    extern int yydebug;
-    yydebug = 0;
 
     rl_init();	/* Bind our completer. */
 
@@ -343,21 +218,8 @@ char *argv[];
 	gargc = argc-1;
     }
 
-    /* set up to catch all signal */
-    /* for (i=1; i<=MAXSIGNAL; i++) { */
-
-    err+=(signal(2, &sighandler) == SIG_ERR);		/* SIGINT */
-    err+=(signal(3, &sighandler) == SIG_ERR);		/* SIGQUIT */
-    err+=(signal(15, &sighandler) == SIG_ERR);		/* SIGTERM */
-    err+=(signal(20, &sighandler) == SIG_ERR);		/* SIGSTP */
-    if (err) {
-    	printf("main() had difficulty setting sighandler\n");
-	return(err);
-    }
-
     init();
     while (moreinput()) {
-	if (fin==stdin) license();
 	run();
     }
     return 0;
@@ -464,25 +326,23 @@ int comment()	/* strip out a potential comment */
 int yylex()
 {
     int c;
-    int rval;
 
     while ((c=rlgetc(fin)) == ' ' || c == '\t') {
     	;
     }
 
-    if (c == '\n')
-    	lineno++;
+    if (c == EOF)
+    	return 0;
 
-    if (c == EOF) {
-	rval=0;
-    } else if (c == '.'  || isdigit(c)) {	/* number */
+    if (c == '.'  || isdigit(c)) {	/* number */
 	double d;
 	rl_ungetc(c,fin);
 
+	/* printf("calling getdouble()..."); */
 	d = getdouble(fin); 
+	/* printf("returned with %e\n",d); */
 
-	/************ Engineering Suffixes Notation <RCW> 10/1/93 **********/
-	/************ added percent 11/12/06 *******************************/
+	/************ Engineering Notation <RCW> 10/1/93 **********/
 	switch(c=rlgetc(fin)) {
 	    case 'A':
 	    case 'a': d*=1e-18; break;
@@ -494,7 +354,6 @@ int yylex()
 	    case 'n': d*=1e-9;  break;
 	    case 'U':
 	    case 'u': d*=1e-6;  break;
-	    case '%': d/=100.0; break;
 	    case 'M':
 	    case 'm': 
 		if((c=rlgetc(fin)) == 'e' || c == 'E') {
@@ -518,16 +377,15 @@ int yylex()
 	}
 	/************************************************************/
 	yylval.y_num = d; 
-	rval=NUMBER;
-    } else if (isalpha(c)) {
+	return NUMBER;
+    }
+
+    if (isalpha(c)) {
         Symbol *s;
-	char sbuf[1024], *p = sbuf;
+	char sbuf[100], *p = sbuf;
 	do {
 	    *p++ = c;
-	} while ((c=rlgetc(fin)) != EOF && (isalnum(c) || 
-		c=='_' || 
-		c=='<' ||
-		c=='>' ));	/* change for Tom's cadence deck varnames */
+	} while ((c=rlgetc(fin)) != EOF && isalnum(c));
 
 	rl_ungetc(c,fin);
 	*p = '\0';
@@ -537,12 +395,16 @@ int yylex()
 	}
 
 	yylval.y_sym=s;
-	rval = s->type == UNDEF ? VAR : s->type;
-    } else if (c == '/') {
-        rval = comment(); 
-    } else if ( c== '"') {	/* quoted string */
-	char sbuf[1024], *p, *emalloc();
-        Symbol *s;
+	return s->type == UNDEF ? VAR : s->type;
+    }
+
+    if (c == '\n')
+    	lineno++;
+
+    if (c == '/') return(comment());
+
+    if ( c== '"') {	/* quoted string */
+	char sbuf[100], *p, *emalloc();
 	for (p = sbuf; (c=rlgetc(fin)) != '"'; p++) {
 	    if (c == '\n' || c == EOF)
 		execerror("missing quote", "");
@@ -553,19 +415,12 @@ int yylex()
 	    *p = backslash(c);
 	}
 	*p = 0;
-	if ((s=lookup(sbuf)) == 0) {
-	    yylval.y_sym = (Symbol *)emalloc(strlen(sbuf)+1);
-	    strcpy((char *) yylval.y_sym, sbuf);
-	    rval = STRING;
-	} else {
-	    yylval.y_sym=s;
-	    rval = s->type == UNDEF ? VAR : s->type;
-	}
-    } else {
-        rval = c;
+	yylval.y_sym = (Symbol *)emalloc(strlen(sbuf)+1);
+	strcpy((char *) yylval.y_sym, sbuf);
+	return STRING;
     }
 
-    return rval;
+    return c;
 }
 
 
