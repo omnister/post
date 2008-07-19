@@ -283,7 +283,6 @@ void graphprint_gnu(int mode) {		/* gnuplot */
     int start, stop;
     double plot=0.0;
 
-    
     start=0;
     stop=0;
     while (stop!=num) {
@@ -376,8 +375,9 @@ void graphprint_gnu(int mode) {		/* gnuplot */
 		    } 
 		}
 	    }
-	    scriptfeed("e\n");
+	    // scriptfeed("e\n");  (ERROR)
 	}
+	scriptfeed("e\n");
 
 	start=stop+1;
     }
