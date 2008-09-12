@@ -80,8 +80,8 @@ list:	/* empty */
 /****************************************/
 
 gr: 	     GR {graphinit();} plotlist { 
-		/* graphprint_gnu(0); */
-		graphprint(0);
+		graphprint_gnu(0);
+		/* graphprint(0); */
 	     };
 
 plotlist:  plotspec 
@@ -139,7 +139,7 @@ expr:	NUMBER {
 		sprintf(buf, "%gI", $1);
 		stringupdate($$, strsave(buf));
 	    }; 
-	| '{' coord_list '}' { $$ = $2; }
+	| '{' eos coord_list '}' { $$ = $3; }
 	| I             { $$ = new_dat(0.0, 1.0); };
 	| VAR { 
 		if ($1->type == UNDEF) 
@@ -244,11 +244,18 @@ coord	:  expr ',' expr {
 coord_list: coord ';' coord {
 		$$ = link_dat($1,$3);
 	    }
+	| coord ';' eos coord {
+		$$ = link_dat($1,$4);
+	    }
 	|   coord_list ';' coord {
 		$$ = link_dat($1,$3);
 	    }
+	|   coord_list ';' eos coord {
+		$$ = link_dat($1,$4);
+	    }
 	;
-eos:    '\n'
+eos:    /* EMPTY */
+	| '\n'
         ;
 %%
 
