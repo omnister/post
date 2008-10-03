@@ -12,7 +12,7 @@ extern char *getwd();
 extern char *xmalloc();
 char * stripwhite();
 char *lineread = (char *) NULL;
-int pushback = (char) NULL;
+int pushback = (int) NULL;
 
 
 #include <signal.h>
@@ -119,22 +119,6 @@ void rl_init()
 }
 
 
-static int savestat = 0;
-static char savebuf[128];
-static char *pbuf = savebuf;
-
-void rl_save_start() {
-   savestat++;
-   pbuf=savebuf;
-}
-
-char *rl_save_end() {
-   savestat=0;
-   *pbuf='\0';
-   printf("<%s>\n", savebuf);
-   return(savebuf);
-}
-
 /* note: "rl_getc" is an internal readline function... Do NOT rename */
 /* this function from "rlgetc" to "rl_getc" or all hell will break loose */
 
@@ -147,9 +131,9 @@ FILE *fd;
     if (fd != stdin) {
 	c=getc(fd);
     } else {
-	if (pushback != (char) NULL) {
+	if (pushback != (int) NULL) {
 	    c=pushback;
-	    pushback=(char) NULL;
+	    pushback=(int) NULL;
 	} else if(lp != NULL && *lp != '\0') {
 	    c=*(lp++);
 	} else {
@@ -161,11 +145,6 @@ FILE *fd;
 		c=*(lp++);
 	    }
 	}
-    }
-
-    if (savestat) {
-        *pbuf=c;
-	pbuf++;
     }
     return (c);
 }
