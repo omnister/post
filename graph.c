@@ -16,7 +16,7 @@ typedef struct plotspec {
 } PLOTSPEC;
 
 int debug = 0;
-int digest = 1; 	/* set to 1 for quick non-zoomable plots */
+int digest = 0; 	/* set to 1 for quick non-zoomable plots */
 
 #define MAXPLOTELEMENTS 128
 #define MAXBUF 1024
@@ -25,7 +25,7 @@ PLOTSPEC plottab[MAXPLOTELEMENTS];
 
 char title[MAXBUF];
 
-static int num;
+static int num;		// number of plots
 
 void graphinit() {
    int i;
@@ -288,6 +288,8 @@ void graphprint_gnu(int mode) {		/* gnuplot */
     while (stop!=num) {
         plot++;
 
+	// find the xy limits that will enclose all the traces
+
 	for (i=start; (i<num && !plottab[i].newgraph); i++) { 
 	    if (plottab[i].ylmin != plottab[i].ylmax) {
 		ylmin = plottab[i].ylmin;
@@ -375,9 +377,9 @@ void graphprint_gnu(int mode) {		/* gnuplot */
 		    } 
 		}
 	    }
-	    // scriptfeed("e\n");  (ERROR)
+	    scriptfeed("e\n"); 
 	}
-	scriptfeed("e\n");
+	// scriptfeed("e\n"); // ERROR
 
 	start=stop+1;
     }
