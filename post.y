@@ -359,7 +359,7 @@ int main(int argc, char *argv[])    /* hoc 6 */
 	gargv = stdinonly;
 	gargc = 1;
     } else {
-	gargv = optind;
+	gargv = &argv[optind];
 	gargc = argc;
     }
 
