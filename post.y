@@ -10,7 +10,6 @@
 
 char buf[128];
 
-
 %}
 
 %union {
@@ -262,6 +261,8 @@ eos:    /* EMPTY */
 #define _GNU_SOURCE
 #include <string.h>	/* for strsignal() */
 #include <math.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 #include "rlgetc.h"
@@ -326,14 +327,14 @@ char *s;
     return(p);
 }
 
-int main(argc, argv)    /* hoc 6 */
-char *argv[];
+int main(int argc, char *argv[])    /* hoc 6 */
 {
     void fpecatch();
     void run();
     void sighandler();
     int moreinput();
     int err=0;
+    int opt;
 
     extern int yydebug;
     yydebug = 0;
@@ -341,13 +342,25 @@ char *argv[];
     rl_init();	/* Bind our completer. */
 
     progname = argv[0];
-    if (argc == 1) {	/* fake an argument list */
+    
+    while ((opt=getopt(argc, argv, "r:")) != -1) {
+        switch (opt) {
+	case 'r':
+	   com_ci(optarg); // open rawfile 
+	   break;
+	default:	/* '?' */
+	   fprintf(stderr, "usage: %s [-r <rawfile>] <script>\n", argv[0]);
+	   exit(1);
+	}
+    }
+
+    if (optind >= argc) {	/* fake an argument list */
 	static char *stdinonly[] = { "-" };
 	gargv = stdinonly;
 	gargc = 1;
     } else {
-	gargv = argv+1;
-	gargc = argc-1;
+	gargv = optind;
+	gargc = argc;
     }
 
     /* set up to catch all signal */
@@ -368,7 +381,6 @@ char *argv[];
 	run();
     }
     return 0;
-
 }
 
 int moreinput()
