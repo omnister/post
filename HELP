@@ -5,10 +5,12 @@ For a quick start, type "make depend" and then "make".  If you like
 what you see, then run "make install" with sufficient permission to
 write in "/usr/local/bin".
 
-Post does it's graphing with gnuplot() which you will need to install
-first.
+Post does it's graphing with either pdplot() or gnuplot() which you will
+need to install first.  Pdplot is preferred because it was developed
+together with post and is optimized for the application.   Gnuplot() is
+used when the "-g" option is specified.
 
-Run post with "post [-r <rawfile>] [scriptfilenames...]".  
+Run post with "post [-g] [-r <rawfile>] [scriptfilenames...]".  
 
 Post(1) will start up interactively if given no arguments.  You'll get a
 ":" prompt in your terminal window.  If you want Post to simply run a
@@ -293,10 +295,11 @@ as a multiplexer.
     p2=sqrt(p1)		; same as pow(p,0.5)
 
 # TIME DELAY
-    p3=warp(p1,p2)	; use one PWL to phase modulate another
-    			; p3(k+p1(k).re) = p1(k)
     p3=warp(p1,d)	; timeshift a signal by delay d
     			; p3(k+d) = p1(k)
+    p3=warp(p1,p2)	; use one PWL to phase modulate another
+    			; the delay amount is read from p2(k)
+    			; p3(k+p2(k).re) = p1(k)
     p3=delay(p1,d)	; delay is a synonym for warp...
 
 # ZERO CROSSING MEASUREMENT

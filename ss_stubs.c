@@ -25,7 +25,7 @@ void *g_new0(size_t n, int count)
 
     p = (void *) calloc(n, count);
     if (p == NULL) 
-	printf("calloc of %u bytes failed:", n);
+	printf("calloc of %u bytes failed:", (unsigned int) n);
     return(p); 
 }
 
@@ -36,7 +36,7 @@ void *g_new(size_t n, int count)
 
     p = (void *) malloc(n*count);
     if (p == NULL) 
-	printf("malloc of %u bytes failed:", n);
+	printf("malloc of %u bytes failed:", (unsigned int) n);
     return(p); 
 }
 
@@ -46,7 +46,7 @@ void *g_realloc(void *p, size_t n)
     void *newp;
     newp = (void *) realloc(p, n);
     if (newp == NULL) 
-	printf("eralloc of %u bytes failed:", n);
+	printf("eralloc of %u bytes failed:", (unsigned int) n);
     return(newp); 
 }
 

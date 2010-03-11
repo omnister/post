@@ -244,7 +244,7 @@ sf_readrow_ascii(SpiceStream *sf, double *ivar, double *dvars)
 	 * that we might read a load of garbage otherwise. */
 	    
 	if(strspn(tok, "0123456789eE+-.") != strlen(tok)) {
-		ss_msg(ERR, "sf_readrow_ascii", "%s:%d: expected number; maybe this isn't an ascii data file at all?", sf->filename, sf->lineno, i);
+		ss_msg(ERR, "sf_readrow_ascii", "%s:%d: expected number; maybe this isn't an ascii data file at all?", sf->filename, sf->lineno);
 		return -1;
 	}
 
