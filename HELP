@@ -8,10 +8,17 @@ write in "/usr/local/bin".
 Post does it's graphing with gnuplot() which you will need to install
 first.
 
-Run post with "post".  You'll get a ":" prompt in your terminal window.
-There should be command line editing available.  I think emacs is the
-default, I switch it to "vi" mode by having a .inputrc file in my home
-directory which contains:
+Run post with "post [-r <rawfile>] [scriptfilenames...]".  
+
+Post(1) will start up interactively if given no arguments.  You'll get a
+":" prompt in your terminal window.  If you want Post to simply run a
+script and exit, you can invoke it with the name of the file.  If you'd
+like Post to load up a particular rawfile before giving you a prompt,
+you can use the "-r <rawfile>" command. 
+
+Post(1) has command line editing in interactive mode.  Emacs is the
+default, but I switch it to "vi" mode by having a .inputrc file in my home
+directory which looks like:
 
     -------------- cut here ---------------
     # this is the gnu-readline configuration file
@@ -34,6 +41,7 @@ You can load a rawfile with
 
 The filename must be in quotes.  You can list the loaded variables
 with "di".
+
 
 NUMBERS
 -------

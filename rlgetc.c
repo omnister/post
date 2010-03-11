@@ -12,7 +12,7 @@ extern char *getwd();
 extern char *xmalloc();
 char * stripwhite();
 char *lineread = (char *) NULL;
-int pushback = (int) NULL;
+int pushback = '\0';
 
 
 #include <signal.h>
@@ -131,9 +131,9 @@ FILE *fd;
     if (fd != stdin) {
 	c=getc(fd);
     } else {
-	if (pushback != (int) NULL) {
+	if (pushback != '\0') {
 	    c=pushback;
-	    pushback=(int) NULL;
+	    pushback= '\0';
 	} else if(lp != NULL && *lp != '\0') {
 	    c=*(lp++);
 	} else {

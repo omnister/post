@@ -1,7 +1,20 @@
 a graphing post processor for spice files
 GPL v2.0
 
-This version uses the Gnuplot(1) program for plotting.
+This version defaults to use the pdplot(1) program for plotting.
+
+Gnuplot(1) can be used instead by specifying the -g option.  However, 
+no further development with gnuplot is anticipated.  It doesn't behave
+nicely on my system (grabbing the focus and relocating the window after
+each plot), so pdplot(1) is preferred.  Eventually, I plan to integrate
+the plotting engine into the same source as post to avoid the slow
+transmission of large data sets between separate programs using pipes. 
+Some preliminary experiments show that 10x speedups are possible by
+plotting only visible pixels and not sending the complete dataset to the
+plotter. 
+
+In either case, you will need to install your graphing program of
+choice. 
 
 See the HELP file for some useful comments.
 

@@ -79,8 +79,11 @@ list:	/* empty */
 /****************************************/
 
 gr: 	     GR {graphinit();} plotlist { 
-		graphprint_gnu(0);
-		/* graphprint(0); */
+		if (!gnuplot) {
+		    graphprint_pd(0);	// default is to use pdplot
+		} else {
+		    graphprint_gnu(0);	// plot with gnuplot
+		}
 	     };
 
 plotlist:  plotspec 
@@ -282,6 +285,7 @@ FILE	*fin;	    /* input file pointer */
 char	**gargv;    /* global argument list */
 int	gargc;
 double  getdouble();
+int 	gnuplot=0;
 
 int	c;	    /* global for use by warning() */
 int     yyparse();
@@ -343,13 +347,16 @@ int main(int argc, char *argv[])    /* hoc 6 */
 
     progname = argv[0];
     
-    while ((opt=getopt(argc, argv, "r:")) != -1) {
+    while ((opt=getopt(argc, argv, "gr:")) != -1) {
         switch (opt) {
+	case 'g':
+	   gnuplot++;
+	   break;
 	case 'r':
 	   com_ci(optarg); // open rawfile 
 	   break;
 	default:	/* '?' */
-	   fprintf(stderr, "usage: %s [-r <rawfile>] <script>\n", argv[0]);
+	   fprintf(stderr, "usage: %s [-g (use gnuplot)] [-r <rawfile>] <script>\n", argv[0]);
 	   exit(1);
 	}
     }
@@ -360,7 +367,7 @@ int main(int argc, char *argv[])    /* hoc 6 */
 	gargc = 1;
     } else {
 	gargv = &argv[optind];
-	gargc = argc;
+	gargc = --argc;
     }
 
     /* set up to catch all signal */

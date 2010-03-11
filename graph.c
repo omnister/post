@@ -94,7 +94,7 @@ double x1,y1,x2,y2,x3,y3;
     }
 }
 
-void graphprint_ap(int mode) {		/* autoplot */
+void graphprint_pd(int mode) {		/* pdplot */
     PLOTSPEC *p;
     DATUM *pd;
     int i;
@@ -117,14 +117,14 @@ void graphprint_ap(int mode) {		/* autoplot */
 
     switch(mode) {
 	case 0:
-	    if (scriptopen("ap", NULL, NULL) == 0) { 
-	       printf("can't open autoplot!\n");
+	    if (scriptopen("pd", NULL, NULL) == 0) { 
+	       printf("can't open pdplot!\n");
 	       return;
 	    } 
 	    break;
 	case 1:
-	    if (scriptopen("ap", "-n", NULL) == 0) { 
-	       printf("can't open autoplot!\n");
+	    if (scriptopen("pd", "-n", NULL) == 0) { 
+	       printf("can't open pdplot!\n");
 	       return;
 	    }
 	    break;

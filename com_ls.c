@@ -21,8 +21,8 @@ int ls() {
     int n;	/* number of files found */
     int i;
     
-    if (regcomp(&preg, SP, REG_EXTENDED) != 0) {
-	printf("regcomp error: %d\n", n);
+    if ((n=regcomp(&preg, SP, REG_EXTENDED)) != 0) {
+	printf("regcomp error: %d\n",n);
 	exit(0);
     };
 
