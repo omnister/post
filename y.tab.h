@@ -9,12 +9,13 @@
 #define XL 265
 #define YL 266
 #define LS 267
-#define PR 268
-#define CI 269
-#define DI 270
-#define QUIT 271
-#define UNARYMINUS 272
-#define UNARYPLUS 273
+#define LX 268
+#define PR 269
+#define CI 270
+#define DI 271
+#define QUIT 272
+#define UNARYMINUS 273
+#define UNARYPLUS 274
 typedef union {
     DATUM  *y_datum;	/* pointer to a complex number type */
     double  y_num;	/* a double precision number */

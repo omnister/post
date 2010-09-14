@@ -7,6 +7,7 @@
 
 typedef struct plotspec {
     int newgraph;	/* set to 1 for a new graph */
+    int    logx;
     double xlmin;	
     double xlmax;
     double ylmin;	/* cause xset command to be emitted */
@@ -35,6 +36,7 @@ void graphinit() {
 
    for (i=0; i<MAXPLOTELEMENTS; i++) {
        p = &(plottab[i]);
+       p->logx=0;
        p->newgraph = 0;
        p->xlmin = 0.0;
        p->xlmax = 0.0;
@@ -63,6 +65,12 @@ void graphexpr(DATUM *d) {
    if (d!=NULL) {
        plottab[num++].datum = dup_dat(d);
    } 
+}
+
+void graphlogx() {
+   PLOTSPEC *p;
+   p = &(plottab[num++]);
+   p->logx = 1.0;
 }
 
 void graphxl(double xlmin, double xlmax) {
@@ -201,6 +209,10 @@ void graphprint_pd(int mode) {		/* pdplot */
 	}
 	if (p->ylmin != p->ylmax) {
 	  sprintf(buf, "yset %g %g\n", p->ylmin, p->ylmax);
+	  scriptfeed(buf);
+	}
+	if (p->logx != 0) {
+	  sprintf(buf, "logx\n");
 	  scriptfeed(buf);
 	}
 	if (p->newgraph) {

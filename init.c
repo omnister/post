@@ -14,12 +14,15 @@ static struct {
     {"i",	I},	/* sqrt(-1) */
     {"I",	I},	/* sqrt(-1) */
     {"gr",	GR},	/* graphnew */
+    {"gs",	GS},	/* graphsame */
     {"ci",      CI},	/* load in a rawfile */
     {"di",      DI},	/* display loaded sig names */
     {"ls",      LS},	/* list loadable rawfiles in cwd */
     {"pr",      PR},	/* print variable */
-    {"xl",      XL},	/* print variable */
-    {"yl",      YL},	/* print variable */
+    {"xl",      XL},	/* xlimit */
+    {"logx",    LX},	/* use log for x axis  */
+    {"logf",    LX},	/* use log for freq axis */
+    {"yl",      YL},	/* ylimit */
     {"quit",    QUIT},	/* quit */
     {"exit",    QUIT},	/* quit */
     {"bye" ,    QUIT},	/* quit */

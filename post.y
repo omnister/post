@@ -26,6 +26,7 @@ char buf[128];
 %token <y_sym>   XL
 %token <y_sym>   YL
 %token <y_sym>   LS 
+%token <y_sym>   LX 
 %token <y_sym>   PR
 %token <y_sym>   CI
 %token <y_sym>   DI 
@@ -57,6 +58,8 @@ list:	/* empty */
 	    }
 	| list gr eos {
 	    }
+	| list gs eos {
+	    }
 	| list LS eos {
 		ls();
 	    }
@@ -85,6 +88,13 @@ gr: 	     GR {graphinit();} plotlist {
 		    graphprint_gnu(0);	// plot with gnuplot
 		}
 	     };
+gs: 	     GS {graphinit();} plotlist { 
+		if (!gnuplot) {
+		    graphprint_pd(1);	// default is to use pdplot
+		} else {
+		    graphprint_gnu(1);	// plot with gnuplot
+		}
+	     };
 
 plotlist:  plotspec 
 	   | plotlist plotsep plotspec; 
@@ -104,7 +114,12 @@ plotspec:  expr {
 	      };
    	   | plotspec xl;
 	   | plotspec yl;
+	   | plotspec lx;
 	   ;
+
+lx: 	   LX {
+	       graphlogx();
+	   };
 
 xl:	   XL expr ',' expr {
 		graphxl($2->re, $4->re);
