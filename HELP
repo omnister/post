@@ -136,8 +136,8 @@ and the addition of a,b yields
 
 	: pr a+b
 	    {
-		0.5,1
-		1,1.5
+		0.5,1;
+		1,1.5;
 	    }
 		
 Which is only defined over the overlap of a,b.
