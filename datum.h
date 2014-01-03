@@ -8,7 +8,7 @@ typedef struct complex {
     struct complex *prev;
 } DATUM;
 
-typedef enum {ADD, AVG, DIV, MAX, MIN, MULT, POW, SUB, WARP, LAM} BINOP;
+typedef enum {ADD, AVG, DIV, MAX, MIN, MULT, MOD, POW, SUB, WARP, LAM} BINOP;
 
 void free_dat(DATUM *p); 
 void print_dat(DATUM *p);
@@ -28,6 +28,7 @@ DATUM *  binary(BINOP operation, DATUM *a, DATUM *b);
 DATUM *  Pow(DATUM *a, DATUM *b);
 DATUM *  Max(DATUM *a, DATUM *b);
 DATUM *  Min(DATUM *a, DATUM *b);
+DATUM *  Mod(DATUM *a, DATUM *b);
 DATUM *  Avg(DATUM *a, DATUM *b);
 DATUM *  Warp(DATUM *a, DATUM *b);
 DATUM *  ui(DATUM *a, DATUM *b);
@@ -40,14 +41,18 @@ DATUM *  lpf(DATUM *a, DATUM *b);
 /* should be passed as NULL */
 
 DATUM *       dt(DATUM *a, DATUM *b);
+DATUM *      Cos(DATUM *a, DATUM *b);
 DATUM *       Db(DATUM *a, DATUM *b);
 DATUM *      Exp(DATUM *a, DATUM *b);
+DATUM *  Greater(DATUM *a, DATUM *b);
 DATUM *       Im(DATUM *a, DATUM *b);
 DATUM *      Mag(DATUM *a, DATUM *b);
 DATUM *      Pha(DATUM *a, DATUM *b);
 DATUM *       Re(DATUM *a, DATUM *b);
+DATUM *     Less(DATUM *a, DATUM *b);
 DATUM *       Ln(DATUM *a, DATUM *b);
 DATUM *    Log10(DATUM *a, DATUM *b);
+DATUM *      Sin(DATUM *a, DATUM *b);
 DATUM *     Sqrt(DATUM *a, DATUM *b);
 DATUM * Integral(DATUM *a, DATUM *b);
 

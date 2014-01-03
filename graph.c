@@ -13,6 +13,7 @@ typedef struct plotspec {
     double ylmin;	/* cause xset command to be emitted */
     double ylmax;	/* ylmin != ylmax */
     DATUM *datum;	/* expression to be plotted */
+    DATUM *versus;	/* for plotting against another variable */
     char   *name;	/* string for label if not NULL */ 
 } PLOTSPEC;
 
@@ -42,6 +43,10 @@ void graphinit() {
        p->xlmax = 0.0;
        p->ylmin = 0.0;
        p->ylmax = 0.0;
+       if (p->versus != NULL) {
+          free_dat(p->versus);
+       }
+       p->versus = NULL;
        if (p->datum != NULL) {
           free_dat(p->datum);
        }
@@ -64,6 +69,12 @@ void graphexpr(DATUM *d) {
    if (debug) printf("in graphexpr()\n");
    if (d!=NULL) {
        plottab[num++].datum = dup_dat(d);
+   } 
+}
+
+void graphversus(DATUM *d) {
+   if (d!=NULL) {
+       plottab[num++].versus = dup_dat(d);
    } 
 }
 
@@ -143,7 +154,7 @@ void graphprint_pd(int mode) {		/* pdplot */
 
     scriptfeed(title);		/* emit title */
 
-    count=0;
+    count=0;			// max/min for all waveforms
     for (i=0; i<num; i++) {
 	p = &(plottab[i]);
 	if (p->datum != NULL) {
@@ -195,7 +206,7 @@ void graphprint_pd(int mode) {		/* pdplot */
 	   strcpy(name, "");
 	} 
 
-	sprintf(buf, "xscale %g %sseconds\n", scale, name);
+	sprintf(buf, "xscale %g %s%s\n", scale, name, independent_varname());
 	/* printf("%s: range:%g, max/min=%g/%g\n", buf, range, max,min); */
 	scriptfeed(buf);
     }
@@ -221,7 +232,11 @@ void graphprint_pd(int mode) {		/* pdplot */
 	  sprintf(buf, "nextygraph\n");
 	  scriptfeed(buf);
 	}
-	if (p->datum != NULL) {
+	if (p->versus != NULL) {  	// unfortunately evaluated after the next block...
+	  scriptfeed("#versus\n");	// will have to scan twice and defer plotting until
+	}				// second pass...
+
+	if (p->datum != NULL) {		// need two cases here: one for regular plotting and one for versus plots
 	    count++;
 	    for (pd=p->datum; pd!=NULL; pd=pd->next) {
 		if (npts < 2) {

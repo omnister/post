@@ -10,15 +10,23 @@
 #define YL 266
 #define LS 267
 #define LX 268
-#define PR 269
-#define CI 270
-#define DI 271
-#define QUIT 272
-#define UNARYMINUS 273
-#define UNARYPLUS 274
+#define VS 269
+#define PR 270
+#define CI 271
+#define DI 272
+#define QUIT 273
+#define UNARYMINUS 274
+#define UNARYPLUS 275
+#ifdef YYSTYPE
+#undef  YYSTYPE_IS_DECLARED
+#define YYSTYPE_IS_DECLARED 1
+#endif
+#ifndef YYSTYPE_IS_DECLARED
+#define YYSTYPE_IS_DECLARED 1
 typedef union {
     DATUM  *y_datum;	/* pointer to a complex number type */
     double  y_num;	/* a double precision number */
     Symbol *y_sym;	/* pointer to Symbol Table */
 } YYSTYPE;
+#endif /* !YYSTYPE_IS_DECLARED */
 extern YYSTYPE yylval;

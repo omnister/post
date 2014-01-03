@@ -167,19 +167,19 @@ void print_dat(DATUM *p) {		/* format and print a datum */
        printf("\t}\n"); 
    } else {
 	if (p->im == 0.0) {
-	    printf("\t%.12g\n",  p->re); 		/* 8+0i prints as "8" */
+	    printf("%.12g",  p->re); 		/* 8+0i prints as "8" */
 	} else {
 	    if (p->re == 0.0) {
 		if (p->im == 1.0) {
-		    printf("\ti\n"); 		/* 1i => "i" */
+		    printf("i"); 		/* 1i => "i" */
 		} else {
-		    printf("\t%.12gi\n", p->im); 	/* 2i => "2i" */
+		    printf("%.12gi", p->im); 	/* 2i => "2i" */
 		}
 	    } else {
 		if (p->im == 1.0) {
-		    printf("\t%.12g+i\n", p->re); 	/* 8+1i => "8+i" */
+		    printf("%.12g+i", p->re); 	/* 8+1i => "8+i" */
 		} else {
-		    printf("\t%.12g%+.12gi\n", p->re, p->im); /* 8+2i => "8+2i */
+		    printf("%.12g%+.12gi", p->re, p->im); /* 8+2i => "8+2i */
 		}
 	    }
 	}
@@ -419,7 +419,7 @@ void emit(BINOP op, DATUM **result, double *tmax, DATUM *datuma, DATUM *datumb) 
     DATUM *tmp;
     DATUM *tmp1;
     DATUM *tmp2;
-    double told;
+    // double told;
     double t;
 
     double x,y;
@@ -431,7 +431,7 @@ void emit(BINOP op, DATUM **result, double *tmax, DATUM *datuma, DATUM *datumb) 
     if (*result == NULL) { 		/* initialize old values */
        datuma_old = *datuma;
        datumb_old = *datumb;
-       told = t;
+       // told = t;
     }
 
     if (t > *tmax) {
@@ -500,7 +500,7 @@ void emit(BINOP op, DATUM **result, double *tmax, DATUM *datuma, DATUM *datumb) 
 
         datuma_old = *datuma;
         datumb_old = *datumb;
-        told = t;
+        // told = t;
 	*tmax = t;
     }
 }
@@ -520,7 +520,7 @@ int docode(double ttb2,double ttb,double tta2,double tta) {
     #
     #               ta2      ta
     #                |        |       
-    # 0    tb2  tb   |        |	     	----------   read b   
+    # 0    tb2  tb   |        |	     	    ----------   read b   
     # 1    tb2       tb       |             out ta2,     read b
     # 2    tb2       |   tb   |             out ta2/tb,  read b
     # 3    tb2       |        tb            out ta2/ta,  read b *
@@ -629,7 +629,7 @@ DATUM * Sqrt(DATUM *a, DATUM *b) {
     DATUM tmp;
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function sqrt takes only one argument!\n");
        return(NULL);
     }
 
@@ -699,6 +699,40 @@ DATUM * Max(DATUM *a, DATUM *b) {
     return(max);
 }
 
+DATUM * Sin(DATUM *a, DATUM *b) {
+    if (b != NULL) {
+       printf("function sin takes only one argument!\n");
+       return(NULL);
+    } else {
+	return( new_dat( sin(a->re), 0.0 ) ); 
+    }
+}
+
+DATUM * Cos(DATUM *a, DATUM *b) {
+    if (b != NULL) {
+       printf("function cos takes only one argument!\n");
+       return(NULL);
+    } else {
+	return( new_dat( cos(a->re), 0.0 ) ); 
+    }
+}
+
+DATUM *Greater(DATUM *a, DATUM *b) {
+   if (b == NULL) {
+       printf("function Greater requires two arguments!\n");
+       return(NULL);
+   }
+   return(new_dat((a->re >= b->re),0.0));
+}
+
+DATUM *Less(DATUM *a, DATUM *b) {
+   if (b == NULL) {
+       printf("function Greater requires two arguments!\n");
+       return(NULL);
+   }
+   return(new_dat((a->re < b->re),0.0));
+}
+
 DATUM * Min(DATUM *a, DATUM *b) {
 
     DATUM *min;
@@ -737,7 +771,7 @@ DATUM * Integral(DATUM *a, DATUM *b) {
     double re, im, re2, im2, iv, iv2;
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function integral takes only one argument!\n");
        return(NULL);
     }
 
@@ -783,7 +817,7 @@ DATUM * ui(DATUM *a, DATUM *b) {
     int debug=0;
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function ui takes only one argument!\n");
        return(NULL);
     }
 
@@ -842,7 +876,7 @@ DATUM * xcross(DATUM *a, DATUM *b) {
 	    re2 = re; re=pd->re; 
 	    iv2 = iv; iv=pd->iv; 
 	    
-	    if ((re2 < 0 && re >= 0) || (re2 > 0 && re <= 0)) {
+	    if ((re2 <= 0 && re >= 0) || (re2 >= 0 && re <= 0)) {
 		tcross = (iv2 + (iv-iv2)*(0.0-re2)/(re-re2));
 		if (debug) printf("%g %g %g %g %g\n", iv2, re2, iv, re, tcross);
 		cross++;
@@ -856,14 +890,14 @@ DATUM * xcross(DATUM *a, DATUM *b) {
 	    }
 	}
     } else { 		// count crossings from end of waveform
-	re=a->re; 
-	iv=a->iv;
+	re=a->prev->re; 
+	iv=a->prev->iv;
 	number *= -1;
 
 	for (pd=a->prev; pd!=a; pd=pd->prev) {	// go backwards
 	    re2 = re; re=pd->re; 
 	    iv2 = iv; iv=pd->iv; 
-	    if ((re2 < 0 && re >= 0) || (re2 > 0 && re <= 0)) {
+	    if ((re2 <= 0 && re >= 0) || (re2 >= 0 && re <= 0)) {
 		tcross = (iv2 + (iv-iv2)*(0.0-re2)/(re-re2));
 		if (debug) printf("%g %g %g %g %g\n", iv2, re2, iv, re, tcross);
 		cross++;
@@ -1030,7 +1064,7 @@ DATUM * Re(DATUM *a, DATUM *b) {
     DATUM *tmp;
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function re takes only one argument!\n");
        return(NULL);
     }
 
@@ -1055,7 +1089,7 @@ DATUM * Im(DATUM *a, DATUM *b) {
     DATUM *tmp;
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function im takes only one argument!\n");
        return(NULL);
     }
 
@@ -1079,7 +1113,7 @@ DATUM * Pha(DATUM *a, DATUM *b) {
     DATUM *tmp;
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function pha takes only one argument!\n");
        return(NULL);
     }
 
@@ -1103,7 +1137,7 @@ DATUM * Mag(DATUM *a, DATUM *b) {
     DATUM *tmp;
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function mag takes only one argument!\n");
        return(NULL);
     }
 
@@ -1127,7 +1161,7 @@ DATUM * Db(DATUM *a, DATUM *b) {
     DATUM *tmp;
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function db takes only one argument!\n");
        return(NULL);
     }
 
@@ -1163,7 +1197,7 @@ DATUM * Log10(DATUM *a, DATUM *b) {
     double re, im;
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function log10 takes only one argument!\n");
        return(NULL);
     }
 
@@ -1191,7 +1225,7 @@ DATUM * Ln(DATUM *a, DATUM *b) {
     double re, im;
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function ln takes only one argument!\n");
        return(NULL);
     }
 
@@ -1228,7 +1262,7 @@ DATUM * Exp(DATUM *a, DATUM *b) {
     double re, im;
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function exp takes only one argument!\n");
        return(NULL);
     }
 
@@ -1258,7 +1292,7 @@ DATUM * dt(DATUM *a, DATUM *b) {
     double dt;
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function dt takes only one argument!\n");
        return(NULL);
     }
 
@@ -1298,7 +1332,7 @@ DATUM * dt(DATUM *a, DATUM *b) {
 DATUM * dopause(DATUM *a, DATUM *b) {		/* ansi already has a pause() command */
 
     if (b != NULL) {
-       printf("function takes only one argument!\n");
+       printf("function takes dopause only one argument!\n");
        return(NULL);
     }
 

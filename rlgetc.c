@@ -1,5 +1,6 @@
 #include "rlgetc.h"
 #include <stdlib.h>
+#include <unistd.h>
 #include <term.h>
 #include <readline/readline.h>
 #include <readline/history.h>  
@@ -61,7 +62,7 @@ FILE *fd;
 {
     /* printf("ungetting %2.2x %c\n",c,c); */
 
-    if (fd != stdin) {
+    if (fd != stdin || !isatty(1) || !isatty(0)) {
 	return(ungetc(c,fd));
     } else {
 	pushback=c;
@@ -88,16 +89,17 @@ char *prompt;
 
     /* Get a line from the user. */
     if (debug) printf("entering readline\n");
-    lineread = readline (prompt);
+    lineread = readline(prompt);
     if (lineread == NULL) {
 	return(NULL);
     }
     fflush(stdout);
 
     /* If the line has any text in it, save it on the history. */
-    if (lineread && *lineread)
+    if (lineread && *lineread) {
 	add_history (lineread);
 	write_history(HISTORY);
+    }
     
     /* add a newline to return string */
 
@@ -127,7 +129,7 @@ FILE *fd;
     int c;
     static char *lp = NULL;
 
-    if (fd != stdin) {
+    if (fd != stdin || !isatty(1) || !isatty(0)) {
 	c=getc(fd);
     } else {
 	if (pushback != '\0') {
@@ -136,7 +138,11 @@ FILE *fd;
 	} else if(lp != NULL && *lp != '\0') {
 	    c=*(lp++);
 	} else {
-	    lineread=rl_gets(":");
+	    if (isatty(1) && isatty(0)) {
+		lineread=rl_gets(":");
+	    } else {
+		lineread=rl_gets("");
+	    }
 	    if (lineread == NULL) {
 		c=EOF;
 	    } else {

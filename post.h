@@ -22,6 +22,7 @@ extern  void execerror();
 extern  int ls(void);
 extern  int com_ci(char *file);
 extern  char *rawfile_name();
+extern  char *independent_varname();
 
 extern  void initcode();
 extern  void init();
@@ -33,6 +34,7 @@ extern void graphexpr(DATUM *d);
 extern void graphxl(double xlmin, double xlmax);
 extern void graphyl(double ylmin, double ylmax);
 extern void graphlogx();
+extern void graphversus();
 extern void graphprint();
 extern void graphprint_gnu();
 extern void graphprint_pd();

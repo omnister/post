@@ -27,6 +27,7 @@ char buf[128];
 %token <y_sym>   YL
 %token <y_sym>   LS 
 %token <y_sym>   LX 
+%token <y_sym>   VS
 %token <y_sym>   PR
 %token <y_sym>   CI
 %token <y_sym>   DI 
@@ -46,14 +47,16 @@ char buf[128];
 list:	/* empty */
 	| list eos
 	| list pr eos {
-		print_dat($2);
-		free_dat($2);
 	    }
 	| list asgn eos { 
 		free_dat($2);
 	    }
 	| list expr eos { 
-		print_dat($2);
+		if (!bflag) {
+		    printf("\t");
+		    print_dat($2);
+		    printf("\n");
+		}
 		free_dat($2);
 	    }
 	| list gr eos {
@@ -64,14 +67,15 @@ list:	/* empty */
 		ls();
 	    }
 	| list CI STRING eos {
-		printf("loading %s\n", (char *) $3);
+		if (!bflag) printf("loading %s\n", (char *) $3);
 		com_ci((char *) $3);
 	    }
 	| list QUIT eos {
 		exit(1);
 	    }
 	| list DI eos {
-		symprint();
+		// printf("background flag=%d\n", bflag);
+		if (!bflag) symprint();
 	    }
 	| list error eos {
 		yyclearin;
@@ -96,6 +100,7 @@ gs: 	     GS {graphinit();} plotlist {
 		}
 	     };
 
+
 plotlist:  plotspec 
 	   | plotlist plotsep plotspec; 
 	   ;
@@ -115,11 +120,17 @@ plotspec:  expr {
    	   | plotspec xl;
 	   | plotspec yl;
 	   | plotspec lx;
+	   | plotspec vs;
 	   ;
 
 lx: 	   LX {
 	       graphlogx();
 	   };
+
+vs:	   VS expr {
+                graphversus($2);
+		free_dat($2);
+           };
 
 xl:	   XL expr ',' expr {
 		graphxl($2->re, $4->re);
@@ -134,7 +145,39 @@ yl:	   YL expr ',' expr {
 
 /****************************************/
 
-pr:	PR expr	{ $$ = $2; }
+pr:	 PR printlist {printf("\n");};
+
+printlist: expr { 
+	   	print_dat($1); 
+		free_dat($1);
+              };
+	   | STRING { 
+	       printf("%s", (char *) $1); 
+	      };
+	   | printlist expr {
+	   	print_dat($2); 
+		free_dat($2);
+	       };
+	   | printlist STRING { 
+	       printf("%s", (char *) $2); 
+	      };
+	   | printlist ',' expr { 
+		printf(" ");
+	   	print_dat($3); 
+		free_dat($3);
+	      };
+	   | printlist ',' STRING {
+		printf(" ");
+	       printf("%s", (char *) $3); 
+	      };
+
+//PR STRING { 
+//		printf("%s\n", (char *) $2);
+//	    }
+//	| PR expr {
+//		print_dat($2);
+//		free_dat($2);
+//           }
 
 
 asgn:   VAR '=' expr    { 
@@ -155,20 +198,23 @@ expr:	NUMBER {
 		$$ = new_dat(0.0,(double) $1);
 		sprintf(buf, "%gI", $1);
 		stringupdate($$, strsave(buf));
-	    }; 
+	    } 
 	| '{' eos coord_list '}' { $$ = $3; }
 	| I             { $$ = new_dat(0.0, 1.0); };
 	| VAR { 
-		if ($1->type == UNDEF) 
-		execerror("undefined variable", $1->name);
-
-		$$ = dup_dat($1->u.val);
+		if ($1->type == UNDEF) {
+		    // execerror("undefined variable", $1->name);
+		    // just create a zero variable
+		    $$ = new_dat(0.0, 0.0);
+		} else {
+		    $$ = dup_dat($1->u.val);
+		}
 		sprintf(buf, "%s", $1->name);
 		stringupdate($$, strsave(buf));
 	    }
         | VAR '(' expr ')' {
 		if ($1->type == UNDEF) 
-		execerror("undefined variable", $1->name);
+		    execerror("undefined function", $1->name);
 
 	        $$ = interp($1->u.val, $3);
 	        sprintf(buf, "%s(%g)", $1->name, $3->re);
@@ -271,6 +317,7 @@ coord_list: coord ';' coord {
 		$$ = link_dat($1,$4);
 	    }
 	;
+
 eos:    /* EMPTY */
 	| '\n'
         ;
@@ -301,6 +348,7 @@ char	**gargv;    /* global argument list */
 int	gargc;
 double  getdouble();
 int 	gnuplot=0;
+int     bflag=0;
 
 int	c;	    /* global for use by warning() */
 int     yyparse();
@@ -326,7 +374,7 @@ int x;
        if (last==x) {
             exit(0);
        } else {
-            printf(": do it again and I'll die!\n");
+            if (!bflag) printf(": do it again and I'll die!\n");
        }
     }
     last = x;
@@ -397,9 +445,13 @@ int main(int argc, char *argv[])    /* hoc 6 */
 	return(err);
     }
 
+    // check if we are interactive or in the background
+    // if (signal(SIGINT, SIG_IGN) == SIG_IGN ) { bflag = 1; }
+
     init();
     while (moreinput()) {
-	if (fin==stdin) license();
+	// if (fin==stdin) license();
+	if (fin==stdin && isatty(1) && isatty(0) ) license();
 	run();
     }
     return 0;
@@ -407,19 +459,25 @@ int main(int argc, char *argv[])    /* hoc 6 */
 
 int moreinput()
 {
+    bflag=1;
     if (gargc-- <= 0)
 	return 0;
-    if (fin && fin != stdin)
+    if (fin && fin != stdin) {
 	fclose(fin);
+    }
     infile = *gargv++;
     lineno = 1;
     if (strcmp(infile, "-") == 0) {
+	bflag=0;
 	fin = stdin;
 	infile = 0;
     } else if (( fin=fopen(infile, "r")) == NULL) {
 	fprintf(stderr, "%s: can't open %s\n", progname, infile);
 	return moreinput();
-    }
+    } 
+
+    if (!isatty(0) || !isatty(1)) bflag++;
+
     return 1;
 }
 
@@ -560,7 +618,7 @@ int yylex()
 	/************************************************************/
 	yylval.y_num = d; 
 	rval=NUMBER;
-    } else if (isalpha(c)) {
+    } else if (isalpha(c) || c=='_') {
         Symbol *s;
 	char sbuf[1024], *p = sbuf;
 	do {
@@ -568,6 +626,7 @@ int yylex()
 	} while ((c=rlgetc(fin)) != EOF && (isalnum(c) || 
 		c=='_' || 
 		c=='<' ||
+		c=='.' ||
 		c=='>' ));	/* change for Tom's cadence deck varnames */
 
 	rl_ungetc(c,fin);
@@ -579,8 +638,14 @@ int yylex()
 
 	yylval.y_sym=s;
 	rval = s->type == UNDEF ? VAR : s->type;
-    } else if (c == '/') {
+    } else if (c == '/') {	// c style comment
         rval = comment(); 
+    } else if (c == '#') {	// # style comment
+	do {
+	    c=rlgetc(fin);
+	} while (c!='\n');
+	// return(yylex());
+	rval='\n';
     } else if ( c== '"') {	/* quoted string */
 	char sbuf[1024], *p, *emalloc();
         Symbol *s;

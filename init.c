@@ -19,10 +19,12 @@ static struct {
     {"di",      DI},	/* display loaded sig names */
     {"ls",      LS},	/* list loadable rawfiles in cwd */
     {"pr",      PR},	/* print variable */
+    {"print",   PR},	/* print variable */
     {"xl",      XL},	/* xlimit */
     {"logx",    LX},	/* use log for x axis  */
     {"logf",    LX},	/* use log for freq axis */
     {"yl",      YL},	/* ylimit */
+    {"vs",      VS},	/* plot versus another variable */
     {"quit",    QUIT},	/* quit */
     {"exit",    QUIT},	/* quit */
     {"bye" ,    QUIT},	/* quit */
@@ -35,7 +37,6 @@ static struct {
     {"if",	IF},
     {"else",	ELSE},
     {"while",	WHILE},
-    {"print",	PRINT},
     {"read",	READ},
 */
 
@@ -61,12 +62,15 @@ static struct {	    /* built-ins */
 } builtins[] = {
     {"avg",	   Avg},	/* binop */
     {"db",	   Db},
+    {"cos",	   Cos},
     {"dt", 	   dt},
     {"exp",	   Exp},
+    {"greater",	   Greater},
     {"lpf",	   lpf},
     {"im",	   Im},
     {"integral",   Integral},
     {"pha",	   Pha},
+    {"less",	   Less},
     {"ln",	   Ln},
     {"log10",	   Log10},
     {"log",	   Log10},
@@ -76,6 +80,7 @@ static struct {	    /* built-ins */
     {"max", 	   Max},	/* binop */
     {"pause", 	   dopause},	
     {"pow", 	   Pow},	/* binop */
+    {"sin", 	   Sin},	
     {"sqrt", 	   Sqrt},	/* binop */
     {"warp", 	   Warp},	/* binop */
     {"delay", 	   Warp},	/* binop */

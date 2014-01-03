@@ -17,8 +17,8 @@ all:	post sp
 post:	$(OBJS) 
 	cc $(CCFLAGS) $(OBJS) -lm -o post -lreadline -g -lncurses
 
-sp: 	$(SPOBJS)
-	cc sp.c $(CCFLAGS) $(SPOBJS) -lm -o sp -lreadline -g -lncurses
+sp: 	$(SPOBJS) sp.o
+	cc sp.o $(CCFLAGS) $(SPOBJS) -lm -o sp -lreadline -g -lncurses
 
 .c.o:
 	cc $(CCFLAGS) -c $*.c   

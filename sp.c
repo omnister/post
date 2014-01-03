@@ -10,8 +10,8 @@
  *
  * Revision 1.5  2003/07/30 06:18:49  sgt
  * better handling of the last point in a wavevar,
- * in particular when wv_interp_val asks for a point beyond the end of the iv range
- * enhance test_read.c to
+ * in particular when wv_interp_val asks for a point beyond 
+ * the end of the iv range enhance test_read.c to
  *
  * Revision 1.4  2000/08/09 23:37:39  sgt
  * ss_hspice.c - wrote sf_guessrows_hsbin routine.
@@ -84,6 +84,10 @@ main(int argc, char **argv)
 	    fprintf(stderr, "     [-v] ; verbose debugging info\n");
 	    exit(1);
 	}
+
+	if (r_flag) {
+	   printf("got r_flag\n");
+	}
 	
 	spicestream_msg_level = ERR;
 	wf = wf_read(argv[optind], filetype);
@@ -130,7 +134,7 @@ main(int argc, char **argv)
 	if(l_flag) {
 
 		/* print header showing all signal names */
-		printf("[xxx]    %10s", wf->iv->wv_name);		/* independent variable */
+		printf("#[xxx]    %10s", wf->iv->wv_name);		/* independent variable */
 		for(i = 0; i < wf->wf_ndv; i++) {
 			printf(" %10s", wf->dv[i].wv_name);		/* dependent variables */
 		}

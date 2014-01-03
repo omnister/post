@@ -20,12 +20,17 @@
 #include "post.h"
 #include "y.tab.h"
 
+char ivname[128]="";
+
 static char *rawfilename = NULL;
 
 char *rawfile_name() {
     return(rawfilename);
 }
 
+char *independent_varname() {
+    return(ivname);
+}
 
 int com_ci(char *rawfile)
 {
@@ -51,6 +56,15 @@ int com_ci(char *rawfile)
 
     if (rawfilename != NULL) { free(rawfilename); } 
     rawfilename = strsave(rawfile);
+
+    if (strncasecmp(wf->iv->wv_name,"frequency", 9)==0) {
+       strcpy(ivname,"Hz");
+    } else if (strncasecmp(wf->iv->wv_name,"time", 4)==0) {
+       strcpy(ivname,"seconds");
+    } else {
+       strcpy(ivname,wf->iv->wv_name);
+       printf("unrecognized wv_name in com_ci: %s\n", wf->iv->wv_name);
+    }
     
     for (i = 0; i < wf->wf_ndv; i++) {
 	result = NULL;
