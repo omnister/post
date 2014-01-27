@@ -125,6 +125,7 @@ void graphprint_pd(int mode) {		/* pdplot */
     char name[128];
     char *pn;
     double x1, y1, x2, y2;
+    char *pmsg=NULL;
 
     plottime = time(NULL);
     strftime(buf, MAXBUF, "%m/%d/%y-%H:%M:%S", localtime(&plottime));
@@ -136,13 +137,13 @@ void graphprint_pd(int mode) {		/* pdplot */
 
     switch(mode) {
 	case 0:
-	    if (scriptopen("pd", NULL, NULL) == 0) { 
+	    if (scriptopen("pd", NULL, NULL,pmsg) == 0) { 
 	       printf("can't open pdplot!\n");
 	       return;
 	    } 
 	    break;
 	case 1:
-	    if (scriptopen("pd", "-n", NULL) == 0) { 
+	    if (scriptopen("pd", "-n", NULL,pmsg) == 0) { 
 	       printf("can't open pdplot!\n");
 	       return;
 	    }
@@ -266,6 +267,7 @@ void graphprint_gnu(int mode) {		/* gnuplot */
     time_t plottime;
     char *pn;
     double ngraphs;
+    char *pmsg=NULL;
 
     system("killall gnuplot_x11 >/dev/null 2>&1");
 
@@ -277,7 +279,7 @@ void graphprint_gnu(int mode) {		/* gnuplot */
 	sprintf(title, "title %s - %s\n", pn, buf);
     }
 
-    if (scriptopen("gnuplot", "-geometry", "+0+0") == 0) {
+    if (scriptopen("gnuplot", "-geometry", "+0+0",pmsg) == 0) {
        printf("can't open gnuplot!\n");
        return;
     } 

@@ -249,7 +249,9 @@ sf_readrow_s3raw(SpiceStream *sf, double *ivar, double *dvars)
 			return 0;
 		}
 		frownum = atoi(tok);
+
 		/* todo: check for expected and maximum row number */
+		frownum += 0;	// for now do nothing with the info, but suppress "not used msg"
 
 		tok = strtok(NULL, " \t\n,");
 		if(!tok) {

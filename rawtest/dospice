@@ -1,0 +1,7 @@
+#!/bin/bash
+
+DECK=$1	 
+
+ngspice -r $DECK.raw -b $DECK.cki 
+
+# && post -r $DECK.raw

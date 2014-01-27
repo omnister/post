@@ -27,7 +27,8 @@ x.tab.h: y.tab.h
 	cmp -s x.tab.h y.tab.h || cp y.tab.h x.tab.h
 
 clean:
-	rm -f $(OBJS) [xy].tab.[ch] y.output
+	rm -f $(OBJS) 
+	rm -f y.tab.c x.tab.c y.output
 	rm -f post
 	rm -f sp
 

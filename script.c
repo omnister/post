@@ -29,10 +29,10 @@ int x;
     fprintf(stderr,"child caught (%d) %s\n", x, strsignal(x)); 
 }
 
-int scriptopen(char* prog, char *arg1, char *arg2)
+int scriptopen(char* prog, char *arg1, char *arg2, char *pmsg)
 {
     int pfdout[2], pfdin[2];
-    char *msg;
+    char *msg=NULL;
     int err=0;
 
     /*
@@ -83,6 +83,8 @@ int scriptopen(char* prog, char *arg1, char *arg2)
 
     if ((rcvfp=fdopen(pfdin[0],"r")) == NULL) {err++; msg="fdopen rcvfp";};
     if ((sendfp=fdopen(pfdout[1], "w")) == NULL) {err++; msg="fdopen sendfp";};
+
+    pmsg = msg;
 
     if (err) return(0);
 

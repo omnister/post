@@ -1,0 +1,8 @@
+dc transfer function
+r1 1 2 1k
+v1 1 0 dc=0
+v2 2 0 dc=0
+.control
+# set filetype=ascii
+.endc
+.dc v1 0 10 1 v2 0 10 1
