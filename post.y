@@ -459,7 +459,7 @@ int main(int argc, char *argv[])    /* hoc 6 */
 
 int moreinput()
 {
-    bflag=1;
+    bflag=0;
     if (gargc-- <= 0)
 	return 0;
     if (fin && fin != stdin) {
@@ -476,7 +476,7 @@ int moreinput()
 	return moreinput();
     } 
 
-    if (!isatty(0) || !isatty(1)) bflag++;
+    if (!isatty(0) && !isatty(1)) bflag++;
 
     return 1;
 }
