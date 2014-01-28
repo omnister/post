@@ -525,14 +525,14 @@ int docode(double ttb2,double ttb,double tta2,double tta) {
     # 2    tb2       |   tb   |             out ta2/tb,  read b
     # 3    tb2       |        tb            out ta2/ta,  read b *
     # 4    tb2       |        |   tb        out ta2/ta,  read a 
-    # 7              tb2 tb   |          	out tb2/tb,  read b
+    # 7              tb2 tb   |        	    out tb2/tb,  read b
     # 8              tb2      tb            out ta2/ta,  read b *
     # 9              tb2      |   tb        out ta2/ta,  read a
     #12              | tb2 tb |             out tb2/tb,  read b
-    #13              | tb2    tb          	out tb2/tb   read a *
-    #14              | tb2    |   tb      	out tb2/ta   read a
-    #19              |        tb2 tb      	out tb2      read a
-    #24              |        |   tb2 tb   	----------   read a
+    #13              | tb2    tb            out tb2/tb   read a *
+    #14              | tb2    |   tb        out tb2/ta   read a
+    #19              |        tb2 tb        out tb2      read a
+    #24              |        |   tb2 tb    ----------   read a
     #                |        |
     #
 
@@ -541,7 +541,7 @@ int docode(double ttb2,double ttb,double tta2,double tta) {
     # one correct operation:
 
     # -------------------------------------------------------
-    # 0  tb2 tb |        |	     	----------    read b   
+    # 0  tb2 tb |        |	    ----------    read b   
     # -------------------------------------------------------
     #24         |        |  tb2 tb  ----------    read a
     # -------------------------------------------------------

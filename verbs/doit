@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# make all the symlinks
+
+for file in xcrossn xcrossp
+do
+    rm -f $file;
+    ln -s xcross $file; 
+	
+done
+
+for file in avg div lam max min mult sub warp
+do
+    rm -f $file;
+    ln -s add $file; 
+done

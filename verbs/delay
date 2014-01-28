@@ -1,0 +1,35 @@
+
+#!/bin/ksh
+# 
+# delay -t "time" "pwl.in" > "pwl.out"
+#
+
+USAGE="\n
+usage: delay [options] < file ; create a time-delayed pwl file\n
+-t time                ; set time delay (0=default)\n
+-h         	       ; print this usage message\n"
+
+DELAY="0"
+
+while getopts "t:h" arg
+do
+    case $arg in
+	h) echo -e $USAGE; exit 0;;
+    	t) export DELAY=$OPTARG ;;
+	:) exit 1 ;;
+	?) exit 1 ;;
+    esac
+done
+
+awk '
+    BEGIN {
+	DELAY=ENVIRON["DELAY"]
+    }
+
+    // {
+    	t2 = t; t = $1
+    	v2 = v; v = $2
+
+    	printf("%12.12g %12.12g\n", $1+DELAY, $2);
+    }
+'

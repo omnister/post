@@ -1,0 +1,59 @@
+# /bin/ksh
+# 
+# xcross  [arguments] 
+# xcrossp [arguments] 
+# xcrossn [arguments] 
+#
+#
+
+USAGE="\n
+usage: \n 
+xcross [options] < file ; print both rising and falling zero crossings\n
+xcrossp [options] < file ; print only rising zero crossings\n
+xcrossn [options] < file ; print only falling zero crossings\n
+-n <N>     ; only print the nth crossing (default=ALL)\n
+-v <volts> ; set crossing voltage (default=0)\n
+-h         ; print this usage message\n"
+
+case `basename $0` in
+    xcross)  export MODE=0 ;;	# all edges
+    xcrossp) export MODE=1 ;;	# rising edges only
+    xcrossn) export MODE=2 ;;	# falling edges only
+    *) echo "bad name in xcross:" $0; exit 1; ;;
+esac
+
+export CROSSNUMBER=0	# set to integer to return the nth crossing
+
+while getopts "n:hv:" arg
+do
+    case $arg in
+	h) echo -e $USAGE; exit 0;;
+    	n) export CROSSNUMBER=$OPTARG ;;
+    	v) export VOLTAGE=$OPTARG ;;
+	:) exit 1 ;;
+	?) exit 1 ;;
+    esac
+done
+
+awk '
+    BEGIN {
+	MODE=ENVIRON["MODE"]
+        VTHRESH=ENVIRON["VOLTAGE"]
+	CROSSNUMBER=ENVIRON["CROSSNUMBER"]
+        cross   = 0
+    }
+
+    // {
+    	t2 = t; t = $1
+    	v2 = v; v = $2
+
+        if ( ((MODE==0 || MODE==1) && (v2 < VTHRESH &&  v >= VTHRESH )) ||
+             ((MODE==0 || MODE==2) && (v2 > VTHRESH &&  v <= VTHRESH )) ) { /* got an edge */
+            tcross = (t2 + (t-t2)*(VTHRESH-v2)/(v-v2));
+            cross++;
+	    if (CROSSNUMBER == 0 || CROSSNUMBER == cross) {
+		printf("%12.12g %12.12g\n", tcross, VTHRESH);
+	    }
+       }
+    }
+'

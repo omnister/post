@@ -1,0 +1,121 @@
+
+USAGE="\n
+usage: \n 
+eye [options] < PWL ; munge time axis to provide a scope display\n
+-u <time>  ; set UI time (1)\n
+-w <width> ; scan width in UI (3)\n
+-h         ; print this usage message\n"
+
+export UI=1		# time of a UI
+export WIDTH=3		# scan width in UI
+
+while getopts "hu:w:" arg
+do
+    case $arg in
+	h) echo -e $USAGE; exit 0;;
+    	u) export UI=$OPTARG ;;
+    	w) export WIDTH=$OPTARG ;;
+	:) exit 1 ;;
+	?) exit 1 ;;
+    esac
+done
+
+awk '
+    BEGIN {
+	WIDTH=ENVIRON["WIDTH"]
+	UI=ENVIRON["UI"]
+    }
+
+    // {
+
+	if (nbits==0) {
+	   # fix for negative time
+	   tstart=$1
+	}
+
+	nbits++
+	told = t; t=$1-tstart
+	vold = v; v=$2
+
+	eyeold = eye; eye = int(t/(WIDTH*UI));
+
+	if (nbits > 3 && eyeold == eye) {
+	    print told-eyeold*UI*WIDTH, vold
+	    print t-eye*UI*WIDTH, v
+	    if ((vold > 0 && v < 0) || (vold < 0 && v > 0)) {
+	        stat(zc(told-eyeold*UI*WIDTH,vold,t-eye*UI*WIDTH,v))
+	    }
+	}
+    }
+
+    END {
+        print "title mean",  mean(), "sigma", sigma()
+    }
+
+    function mean() {
+       return (m)
+    }
+
+    function sigma() {
+       return(sqrt(s/(k-1)))
+    }
+
+    function stat(x) {
+	k++
+	p = m
+	m += (x - m)/k
+	s += (x-p)*(x-m) 
+    }
+
+    function omean() {
+       return (xx/nn)
+    }
+
+    function osigma() {
+       return sqrt((x2/nn) - (xx/nn)^2)
+    }
+
+    function ostat(x) {
+       nn++
+       xx += x
+       x2 += x*x
+    }
+
+    #given line between t1,y1 and t2,y2 return t3 at which y3==0
+    function zc(t1,y1,t2,y2) {
+       dt = t2-t1 
+       dy = y2-y1
+       # t3 = t1 + a*dt
+       # y3 = y1 + a*dy
+       #
+       # y3 == 0
+       # ... 0 = y1 + a*dy
+       # ... y1 = -a*dy
+       # ... a = -y1/dy
+       #
+       return (t1 - y1*dt/dy)
+    }
+'
+
+exit 0
+
+
+########################################
+a better way to compute sigma, mean:
+
+
+number! The problem, together with a better solution, is described in Donald
+Knuth's "The Art of Computer Programming, Volume 2: Seminumerical
+Algorithms", section 4.2.2. The solution is to compute mean and standard
+deviation using a recurrence relation, like this:
+
+M(1) = x(1), M(k) = M(k-1) + (x(k) - M(k-1)) / k
+S(1) = 0, S(k) = S(k-1) + (x(k) - M(k-1)) * (x(k) - M(k))
+for 2 <= k <= n, then
+sigma = sqrt(S(n) / (n - 1))
+
+k++
+p = m
+m += (x - m)/k
+s += (x-p)*(x-m) 
+sigma = sqrt(s/(k-1))

@@ -1,0 +1,62 @@
+
+export MODE=0		# set default trigger mode
+export VOLTAGE=0	# set default threshold
+export UI=1		# time of a UI
+export WIDTH=5		# scan width in UI
+
+
+USAGE="\n
+usage: \n 
+scope [options] < PWL ; munge time axis to provide a scope display\n
+-t [0,1,-1] ; set trigger mode (1=rising, -1=falling, 0=both ($MODE)\n
+-u <time>  ; set UI time ($UI)\n
+-v <volts> ; set crossing voltage ($VOLTAGE)\n
+-w <width> ; scan width in UI ($WIDTH)\n
+-h         ; print this usage message\n"
+
+while getopts "ht:v:u:w:" arg
+do
+    case $arg in
+    	t) export MODE=$OPTARG ;;
+    	u) export UI=$OPTARG ;;
+    	v) export VOLTAGE=$OPTARG ;;
+    	w) export WIDTH=$OPTARG ;;
+	h) echo -e $USAGE; exit 0;;
+	:) echo -e $USAGE; exit 1;;
+	?) echo -e $USAGE; exit 1;;
+    esac
+done
+
+awk '
+    BEGIN {
+	MODE=ENVIRON["MODE"]
+	VTHRESH=ENVIRON["VOLTAGE"]
+	WIDTH=ENVIRON["WIDTH"]
+	UI=ENVIRON["UI"]
+	trig = -1
+    }
+
+    // {
+	nbits++
+	t2 = t; t=$1
+	v2 = v; v=$2
+
+        if ( ((MODE==0 || MODE>0) && 
+	     (v2 < VTHRESH &&  v >= VTHRESH )) ||
+             ((MODE==0 || MODE<0) && 
+	     (v2 > VTHRESH &&  v <= VTHRESH )) ) { /* got an edge */
+
+            tcross = (t2 + (t-t2)*(VTHRESH-v2)/(v-v2));
+            cross++;
+       }
+
+	if (tcross  - trig > UI*WIDTH) {
+	    trig = tcross
+	}
+
+	if (t-trig < UI*WIDTH && trig != -1) {
+	    printf("%.12g %.12g\n", t-trig, v);
+	}
+    }
+'
+

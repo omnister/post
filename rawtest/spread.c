@@ -65,6 +65,8 @@ int read_header(int *nvars, int *npts, int *cflag) {
    	} else if (arg=prefix(s, "Binary:")) {
 	   printf("Binary: %s", arg);
 	   break;
+	} else {
+	   printf("    : %s", s);
 	}
    }
    return(err);

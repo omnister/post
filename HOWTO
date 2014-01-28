@@ -253,8 +253,8 @@ as a multiplexer.
 
 # PAUSE
     
-    pause(<expression>)	;post will sleep(2) for expression.re seconds
-                        ;if an interrupt (usually ^C) is received, the
+    pause(<expression>)	;post will sleep(2) for expression.re seconds.
+                        ;If an interrupt (usually ^C) is received, the
 			;pause will be aborted, returning to normal 
 			;command flow.  Pause is handy inside a script
 			;for putting between graph commands so the user 

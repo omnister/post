@@ -9,7 +9,7 @@ EXAMPLES = aoi.W.tr0 nand.N.tr0 pd1.N.tr0 quickINV.tr0 quickTRAN.tr0
 HEADERS =  rlgetc.h datum.h script.h post.h y.tab.h  symbol.h \
 ss_intern.h ss_spice2.h ss_spicestream.h ss_wavefile.h
 DEMOS=scriptdemo
-TARS = HELP README COPYING makefile $(SRCS) $(DEMOS) $(HEADERS) $(EXTRAS) $(EXAMPLES)
+TARS = HOWTO README COPYING makefile $(SRCS) $(DEMOS) $(HEADERS) $(EXTRAS) $(EXAMPLES)
 CCFLAGS = -ggdb -Wall
 
 all:	post sp
@@ -74,6 +74,12 @@ com_ci.o: ss_wavefile.h
 com_ci.o: y.tab.h
 com_ls.o: post.h
 datum.o: post.h
+gnew.o: post.h
+gnew.o: script.h
+gold.o: post.h
+gold.o: script.h
+g.o: post.h
+g.o: script.h
 graph.old.o: post.h
 graph.old.o: script.h
 graph.o: post.h
