@@ -223,6 +223,9 @@ DATUM * scalar(BINOP operation, DATUM *a, DATUM *b) {	/* do a binary operation o
 		return(new_dat(a->re, a->im));
 	    }
 	    break;
+	case MOD:
+	    return(new_dat(fmod(a->re, b->re),0.0));
+	    break;
 	case MULT:
 	    re1 = (a->re * b->re) - (a->im * b->im);
 	    im1 = (a->re * b->im) + (a->im * b->re);
@@ -452,6 +455,7 @@ void emit(BINOP op, DATUM **result, double *tmax, DATUM *datuma, DATUM *datumb) 
 	    case MULT: 	/* FIXME: need to find zero crossings */
 	    case MAX:
 	    case MIN:
+	    case MOD:
 
 	        /*
 	        # find intersection * where x == y
@@ -678,6 +682,7 @@ DATUM * Avg(DATUM *a, DATUM *b) {
     }
 }
 
+
 DATUM * Max(DATUM *a, DATUM *b) {
 
     DATUM *max;
@@ -731,6 +736,15 @@ DATUM *Less(DATUM *a, DATUM *b) {
        return(NULL);
    }
    return(new_dat((a->re < b->re),0.0));
+}
+
+DATUM * Mod(DATUM *a, DATUM *b) {
+    if (b == NULL) {
+       printf("function Mod requires two arguments!\n");
+       return(NULL);
+    }
+
+    return(binary(MOD, a, b));
 }
 
 DATUM * Min(DATUM *a, DATUM *b) {

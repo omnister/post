@@ -476,6 +476,7 @@ int moreinput()
 	return moreinput();
     } 
 
+    // FIXME: think this through better...
     if (!isatty(0) && !isatty(1)) bflag++;
 
     return 1;

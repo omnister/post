@@ -76,6 +76,7 @@ static struct {	    /* built-ins */
     {"log",	   Log10},
     {"re",	   Re},
     {"mag",	   Mag},	/* binop */
+    {"mod", 	   Mod},	/* binop */
     {"min", 	   Min},	/* binop */
     {"max", 	   Max},	/* binop */
     {"pause", 	   dopause},	

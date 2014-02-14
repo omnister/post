@@ -239,6 +239,11 @@ as a multiplexer.
 
     p2=mag(p1)	        ;p2(k) = sqrt( (p1(k).re)^2 + (p1(k).im)^2 )		
 
+# MODULUS
+   
+    p2=mod(p1,p2)	;p3.re = fmod(p1.re, p2.re)
+                        ;p3.im = 0.0;
+
 # MAXIMUM/MINIMUM
 
     p3=max(p1,p2)	;p3 = (p1(k).re > p2(k).re)?p1(k):p2(k)

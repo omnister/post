@@ -125,6 +125,21 @@ int com_ci(char *rawfile)
 
 	install(buf, VAR, result);
     }
+
+    // create synthetic time variable
+    
+    result = NULL;
+    for (j = 0; j < wf->nvalues; j++) {
+	re = wds_get_point(wf->iv->wds, j);
+	im = 0.0;
+	tmp=new_dat(re,im);
+	tmp->iv = re;
+	result = link_dat(result, tmp);
+    }
+    strcpy(buf,"time");
+    install(buf, VAR, result);
+
+
     wf_free(wf);
     return(0);
 }
