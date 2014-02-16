@@ -42,7 +42,9 @@ You can load a rawfile with
 	: ci "file"
 
 The filename must be in quotes.  You can list the loaded variables
-with "di".
+with "di".  In addition to dependant variables from the SPICE deck,
+there will be a synthetic time variable that can be used for making
+calculations as a function of the time axis.
 
 Post ignores anything from a "#" character to the end of the line.
 
@@ -338,6 +340,19 @@ as a multiplexer.
     			; the delay amount is read from p2(k)
     			; p3(k+p2(k).re) = p1(k)
     p3=delay(p1,d)	; delay is a synonym for warp...
+
+# VERSUS (making eye diagrams)
+
+    gr versus(p1,p2)	; return a new PWL with the re/im part determined by
+                        ; p1, and the independant variable (time/frequency) 
+                        ; set by p2.re.
+
+    gr versus(p1,mod(time, 160p))
+                        ; plots the p1 waveform with modular time axis
+                        ; (an eye diagram)...
+
+    gr versus(p1,mod(time+82p, 160p))
+                        ; shifts the center of the eye diagram by 82p
 
 # ZERO CROSSING MEASUREMENT
 

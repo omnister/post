@@ -233,11 +233,12 @@ void graphprint_pd(int mode) {		/* pdplot */
 	  sprintf(buf, "nextygraph\n");
 	  scriptfeed(buf);
 	}
-	if (p->versus != NULL) {  	// unfortunately evaluated after the next block...
-	  scriptfeed("#versus\n");	// will have to scan twice and defer plotting until
-	}				// second pass...
 
-	if (p->datum != NULL) {		// need two cases here: one for regular plotting and one for versus plots
+	if (p->versus != NULL) {	// versus plotting 
+	    fprintf(stderr, "please use versus(p1,p2) function instead of vs\n");
+        }
+
+	if (p->datum != NULL) {	// regular plotting  (fully functional)
 	    count++;
 	    for (pd=p->datum; pd!=NULL; pd=pd->next) {
 		if (npts < 2) {

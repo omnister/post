@@ -17,6 +17,10 @@ int dat_stat() {			/* return number of malloc'd datums */
     return (mem_use);
 }
 
+
+// given a PWL *var, and an independant variable *pt
+// return the value of the PWL at (time/frequency) *pt
+
 DATUM * interp(DATUM *var, DATUM *pt) { 		/* interpolate a PWL */
    DATUM *pd;
    double t, told;
@@ -255,6 +259,11 @@ DATUM * scalar(BINOP operation, DATUM *a, DATUM *b) {	/* do a binary operation o
 	    tmp->iv = a->iv + b->re;
 	    return(tmp);
 	    break;
+	case VERSUS:
+	    tmp = new_dat(a->re, a->im);
+            tmp->iv = b->re;
+	    return(tmp);
+	    break;
 	default:
 	    printf("bad case in scalar/scalar binary op table\n");
 	    return(new_dat(0.0, 0.0));
@@ -449,6 +458,7 @@ void emit(BINOP op, DATUM **result, double *tmax, DATUM *datuma, DATUM *datumb) 
 		*result = link_dat(*result, tmp);
 	        break;
 	    case WARP:
+	    case VERSUS:
 		tmp = scalar(op, datuma, datumb);
 		*result = link_dat(*result, tmp);
 	        break;
@@ -770,6 +780,10 @@ DATUM * Min(DATUM *a, DATUM *b) {
 
 DATUM * Pow(DATUM *a, DATUM *b) {
     return(binary(POW, a, b));
+}
+
+DATUM * Versus(DATUM *a, DATUM *b) {
+    return(binary(VERSUS, a, b));
 }
 
 DATUM * Warp(DATUM *a, DATUM *b) {

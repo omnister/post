@@ -1,4 +1,4 @@
-a graphing post processor for spice files
+a graphing post processor for SPICE files
 GPL v2.0
 
 This version defaults to use the pdplot(1) program for plotting.
@@ -16,7 +16,7 @@ plotter.
 In either case, you will need to install your graphing program of
 choice. 
 
-See the HELP file for some useful comments.
+See the HOWTO file for usage and the start of a post(1) manual page.
 
 --
 Rick Walker

@@ -58,7 +58,7 @@ int com_ci(char *rawfile)
     rawfilename = strsave(rawfile);
 
     if (strncasecmp(wf->iv->wv_name,"frequency", 9)==0) {
-       strcpy(ivname,"Hz");
+       strcpy(ivname,"frequency");
     } else if (strncasecmp(wf->iv->wv_name,"time", 4)==0) {
        strcpy(ivname,"seconds");
     } else {
@@ -136,8 +136,7 @@ int com_ci(char *rawfile)
 	tmp->iv = re;
 	result = link_dat(result, tmp);
     }
-    strcpy(buf,"time");
-    install(buf, VAR, result);
+    install(wf->iv->wv_name, VAR, result);
 
 
     wf_free(wf);

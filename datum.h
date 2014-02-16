@@ -8,7 +8,7 @@ typedef struct complex {
     struct complex *prev;
 } DATUM;
 
-typedef enum {ADD, AVG, DIV, MAX, MIN, MULT, MOD, POW, SUB, WARP, LAM} BINOP;
+typedef enum {ADD, AVG, DIV, MAX, MIN, MULT, MOD, POW, SUB, WARP, VERSUS, LAM} BINOP;
 
 void free_dat(DATUM *p); 
 void print_dat(DATUM *p);
@@ -31,6 +31,7 @@ DATUM *  Min(DATUM *a, DATUM *b);
 DATUM *  Mod(DATUM *a, DATUM *b);
 DATUM *  Avg(DATUM *a, DATUM *b);
 DATUM *  Warp(DATUM *a, DATUM *b);
+DATUM *  Versus(DATUM *a, DATUM *b);
 DATUM *  ui(DATUM *a, DATUM *b);
 DATUM *  xcross(DATUM *a, DATUM *b);
 DATUM *  xcrossp(DATUM *a, DATUM *b);

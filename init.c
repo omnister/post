@@ -84,6 +84,7 @@ static struct {	    /* built-ins */
     {"sin", 	   Sin},	
     {"sqrt", 	   Sqrt},	/* binop */
     {"warp", 	   Warp},	/* binop */
+    {"versus", 	   Versus},	/* binop */
     {"delay", 	   Warp},	/* binop */
     {"ui", 	   ui},	
     {"xcross", 	   xcross},	/* binop */
