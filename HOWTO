@@ -354,6 +354,10 @@ as a multiplexer.
     gr versus(p1,mod(time+82p, 160p))
                         ; shifts the center of the eye diagram by 82p
 
+                        ; since versus() returns a PWL with a non-monotonic
+			; independant variable, it will not usually be useful
+			; to do anything other than plot the result.
+
 # ZERO CROSSING MEASUREMENT
 
     p3=xcross(p1,p2)
