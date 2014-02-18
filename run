@@ -8,13 +8,11 @@
 # RCW 2/17/2014
 #
 
-# Allow user to say <deck> <deck.raw> or <deck.cki>
+# Allow user to run <deck> <deck.raw> or <deck.cki>
 DECK=`echo $1 | sed -e 's/.cki$//' -e 's/.raw$//'`
 
 SPICE="ngspice -b $DECK.cki -r $DECK.raw -o $DECK.txt"
 POST="post -r $DECK.raw"
-
-echo running $DECK
 
 if [ "$DECK" == "" ] ; then
     echo "    usage: $0 <deck>"
@@ -26,7 +24,12 @@ then
    # echo src is newer - do the build;
    $SPICE && $POST
 else
-   # echo dst is newer;
-   $POST
+   # complain if no raw file
+   if [ -f $DECK.raw ] 
+   then
+       $POST
+   else
+       echo "$0: can't open $DECK.raw"
+   fi
 fi
 
