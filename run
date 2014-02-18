@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# usage: run <deck>
+#
+# if <deck>.cki is newer than <deck>.raw, run spice,
+# if no SPICE errors, then run post on <deck>.raw
+#
+# RCW 2/17/2014
+#
+
+SPICE="ngspice -b $DECK.cki -r $DECK.raw -o $DECK.txt"
+POST="post -r $DECK.raw"
+
+# Allow user to say <deck> <deck.raw> or <deck.cki>
+DECK=`echo $1 | sed -e 's/.cki$//' -e 's/.raw$//'`
+
+if [ "$DECK" == "" ] ; then
+    echo "    usage: $0 <deck>"
+    exit;
+fi
+
+if [[ $DECK.cki -nt $DECK.raw ]];
+then
+   # echo src is newer - do the build;
+   $SPICE && $POST
+else
+   # echo dst is newer;
+   $POST
+fi
+
