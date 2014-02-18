@@ -20,23 +20,16 @@
  *
  */
 
-#include "ss_intern.h"
 
+#include "ss_intern.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <float.h>
 
-/*
-    #include <config.h>
-    #ifdef HAVE_GTK
-    #include <glib.h>
-    #else
-    #include "glib_fake.h"
-    #endif
-*/
-
+// #include <config.h>
+// #include <glib.h>
 #include "ss_spicestream.h"
 
 static int sf_readrow_s3raw(SpiceStream *sf, double *ivar, double *dvars);
@@ -69,7 +62,6 @@ sf_rdhdr_s3raw(char *name, FILE *fp)
 	char *line = NULL;
 	int lineno = 0;
 	int linesize = 1024;
-	/* int dvsize = 128; */
 	char *key, *val;
 	int nvars, npoints;
 	int got_nvars = 0;
@@ -150,7 +142,7 @@ sf_rdhdr_s3raw(char *name, FILE *fp)
 					goto err;
 				}
 				if(i == 0) { /* assume Ind.Var. first */
-					sf->ivar->name = (char *) g_strdup(vname);
+					sf->ivar->name = g_strdup(vname);
 					sf->ivar->type = sf_str2type_s3raw(vtypestr);
 					sf->ivar->col = 0;
 					/* ivar can't really be two-column,
@@ -162,7 +154,7 @@ sf_rdhdr_s3raw(char *name, FILE *fp)
 						sf->ivar->ncols = 1;
 						
 				} else {
-					sf->dvar[i-1].name = (char *) g_strdup(vname);
+					sf->dvar[i-1].name = g_strdup(vname);
 					sf->dvar[i-1].type = sf_str2type_s3raw(vtypestr);
 					sf->dvar[i-1].col = sf->ncols;
 					if(dtype_complex)
@@ -211,10 +203,61 @@ err:
 	if(line)
 		g_free(line);
 	if(sf) {
+		sf->fp = NULL;  
+		/* prevent ss_delete from cleaning up FILE*; ss_open callers 
+		   may rewind and try another format on failure. */
 		ss_delete(sf);
 	}
 	return NULL;
 }
+
+
+/* return pointer to the next whitespace-seperated token in the file 
+ * advances to the next lines of the file as needed.
+ * pointer points into the line buffer linebuf.
+ * token will not be nul-terminated; whole line remains available.
+ * 
+ * upon return, sf->linep points to the char after the end of the token,
+ * which might be the trailing nul or might be whitespace.
+ */
+static char *sf_nexttoken(SpiceStream *sf)
+{
+	char *cp;
+	char *tok = NULL;
+
+	if(sf->linep)
+		cp = sf->linep;
+	else {
+		if(fread_line(sf->fp, &sf->linebuf, &sf->lbufsize) == EOF) {
+			return 0;  /* normal EOF */
+		}
+		sf->lineno++;
+		cp = sf->linebuf;
+	}
+
+	// search for start of token
+	while(!tok) {
+		if(*cp == 0) {
+			do {
+				if(fread_line(sf->fp, &sf->linebuf, &sf->lbufsize) == EOF) {
+					return 0;  /* normal EOF */
+				}
+				sf->lineno++;
+				cp = sf->linebuf;
+			} while (*cp == 0); // skip multiple blank lines
+		}
+		if(!isspace(*cp))
+			tok = cp;
+		else
+			cp++;
+	} 
+	// tok now points to start of the token; search for the end
+	while(*cp && !isspace(*cp))
+			cp++;
+	sf->linep = cp;
+	return tok;
+}
+
 
 /*
  * Read row of values from an ascii spice3 raw file
@@ -223,37 +266,27 @@ static int
 sf_readrow_s3raw(SpiceStream *sf, double *ivar, double *dvars)
 {
 	int i;
-	int frownum;
+	// int frownum;
 	char *tok;
 	double v;
-
+ 
 	if((sf->flags & SSF_PUSHBACK) == 0) {
-		do {
-			if(fread_line(sf->fp, &sf->linebuf, &sf->lbufsize) == EOF) {
-				return 0;  /* normal EOF */
-			}
-			sf->lineno++;
-			/* first line of a set contains row number and independent variable.
-			 * there may be a blank line between line sets
-			 */
-			tok = strtok(sf->linebuf, " \t\n,");
-		} while(!tok);
+		tok = sf_nexttoken(sf);
 		if(!tok) {
-			ss_msg(ERR, msgid, "%s:%d: expected row number", 
-			       sf->filename, sf->lineno);
-			return -1;
+			return 0;
+//			ss_msg(ERR, msgid, "%s:%d: expected row number", 
+//			       sf->filename, sf->lineno);
+//			return -1;
 		}
 		if(!isdigit(*tok)) {
 			ss_msg(WARN, msgid, "%s:%d: expected row number, got \"%s\". Note: only one dataset per file is supported, extra garbage ignored", 
 			       sf->filename, sf->lineno, tok);
 			return 0;
 		}
-		frownum = atoi(tok);
-
+		// frownum = atoi(tok);
 		/* todo: check for expected and maximum row number */
-		frownum += 0;	// for now do nothing with the info, but suppress "not used msg"
 
-		tok = strtok(NULL, " \t\n,");
+		tok = sf_nexttoken(sf);
 		if(!tok) {
 			ss_msg(WARN, msgid, "%s:%d: expected ivar value", 
 			       sf->filename, sf->lineno);
@@ -282,14 +315,7 @@ sf_readrow_s3raw(SpiceStream *sf, double *ivar, double *dvars)
 		SpiceVar *dv;
 		dv = &sf->dvar[i];
 
-		if(fread_line(sf->fp, &sf->linebuf, &sf->lbufsize) == EOF) {
-			ss_msg(ERR, msgid, "%s:%d unexpected EOF at dvar %d",
-			       sf->filename, sf->lineno, i);
-			return -1;
-		}
-		sf->lineno++;
-
-		tok = strtok(sf->linebuf, " \t\n,");
+		tok = sf_nexttoken(sf);
 		if(!tok) {
 			ss_msg(ERR, msgid, "%s:%d: expected value", 
 			       sf->filename, sf->lineno);
@@ -298,12 +324,13 @@ sf_readrow_s3raw(SpiceStream *sf, double *ivar, double *dvars)
 		dvars[dv->col-1] = atof(tok);
 
 		if(dv->ncols > 1) {
-			tok = strtok(NULL, " \t\n,");
-			if(!tok) {
+			tok = strchr(tok, ',');
+			if(!tok || !*(tok+1)) {
 				ss_msg(ERR, msgid, "%s:%d: expected second value", 
 				       sf->filename, sf->lineno);
 				return -1;
 			}
+			tok++;
 			dvars[dv->col] = atof(tok);
 		}
 	}
@@ -319,7 +346,8 @@ sf_readrow_s3raw(SpiceStream *sf, double *ivar, double *dvars)
 static int
 sf_getval_s3bin(SpiceStream *sf, double *dval)
 {
-	off64_t pos;
+	// off64_t pos;
+	off_t pos;
 	double val;
 
 	if(sf->read_vals >= sf->expected_vals) {
