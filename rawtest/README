@@ -1,1 +1,5 @@
 A start at a simple ngspice rawfile parser
+that handles parameter sweeps
+
+test with:
+	spread < tdn.raw
