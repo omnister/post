@@ -1,6 +1,15 @@
 a graphing post processor for SPICE files
 GPL v2.0
 
+Post can do math on piece-wise-linear SPICE waveforms.  Plot gives
+you an interactive shell where you can type expressions like:
+
+  gr db((v1-v2)/v3)	        ; graph log of (v1-v2)/v3
+  gr versus(v1,mod(time,100p))  ; graph a 10Gb/s eye diagram
+  gr integral(v2)		; graph the integral of v2
+  gr v1, delay(v2,1n)		; graph v1 and a delayed v2 on same graph
+  gr mag(v1), im(v2)		; magnitude of v1, imaginary part of v2
+
 This version defaults to use the pdplot(1) program for plotting.
 
 Gnuplot(1) can be used instead by specifying the -g option.  However, 
