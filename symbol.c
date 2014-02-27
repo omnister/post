@@ -38,9 +38,23 @@ DATUM *d;
 void symprint()
 {
     Symbol *sp;
-    for (sp=symlist; sp!=(Symbol *)0; sp=sp->next)
-        if (sp->type == VAR) 
-            printf("    %s\n", sp->name);
+    int lw=0;
+    int len=0;
+
+    printf("\t");
+    for (sp=symlist; sp!=(Symbol *)0; sp=sp->next) {
+        if (sp->type == VAR) {
+	    len=strlen(sp->name);
+	    if ((lw+len+1) > 65) {
+	       printf("\n\t");
+	       lw=len+1;
+	    } else {
+	       lw+=(len+1);
+	    }
+            printf("%s ", sp->name);
+	}
+    }
+    printf("\n");
 }
 
 char *emalloc(n)    /* check return from malloc */
