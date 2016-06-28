@@ -1,8 +1,15 @@
 // read in an ngspice rawfile from first principles...
 // includes .ac/.tran/.dc analysis
-// RCW: 07/20/2014
-// RCW: 06/27/2016
- 
+// RCW: 07/20/2014 general parsing structure
+// RCW: 06/27/2016 start on command line options
+// RCW: 06/27/2016 parse variable names into array
+
+// some planning...
+// cat <rawfile> | sp2 <varname1> <varname2> ... ; extract data for varnames
+// cat <rawfile> | sp2 -l  			; list varnames in rawfile
+// cat <rawfile> | sp2 -l -v  			; list everything
+// sp2 -? 					; usage message
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -31,7 +38,20 @@ void freespicedat(SPICEDAT *sp);
 void dumpspicedat(SPICEDAT *sp);
 void dumpspiceheaders(SPICEDAT *sp);
 
-main() {
+char *progname;
+
+usage() {
+    fprintf(stderr, "usage: %s [options] varnames ... < rawfile\n",progname);
+    fprintf(stderr, "  [-h] print this help usage\n");
+    fprintf(stderr, "  [-l] list only index to varnames\n");
+    fprintf(stderr, "  [-v] verbose\n");
+    exit(3);
+}
+
+int dolist=0;	// do a listing
+int verbose=0;	// add in more verbosity
+
+int main(int argc, char **argv) {
    int i,x;
 
    int nvars, npts;
@@ -39,6 +59,35 @@ main() {
    int complexflag;
    int total;
    SPICEDAT *sp;
+
+   int c, errflag=0;
+   extern char *optarg;
+   extern int optind, optopt;
+
+
+   progname = argv[0];
+   while ((c = getopt(argc, argv, "hlv")) != -1) {
+      switch(c) {
+         case 'h':
+	    usage();
+	    break;
+         case 'l':
+	    dolist++;
+	    break;
+         case 'v':
+	    verbose++;
+	    break;
+      }
+   }
+
+   // if (dolist) printf("dolist\n");
+   // if (verbose) printf("verbose\n");
+   // for (i=0; i<(argc-optind); i++) {
+   //    printf("%s\n", argv[optind+i]);
+   // }
+
+   // exit(1);
+
 
    while(!feof(stdin)) {
        if (feof(stdin)) break;
@@ -60,8 +109,12 @@ main() {
        }
    }
 
-   dumpspiceheaders(sp);	// print headers
-   dumpspicedat(sp);		// print out data tables
+   if (dolist) {
+       dumpspiceheaders(sp);	// print headers
+   } else {
+       dumpspiceheaders(sp);	// print headers
+       dumpspicedat(sp);	// print out data tables
+   }
    freespicedat(sp);
 
    exit(1);
@@ -97,13 +150,15 @@ void freespicedat(SPICEDAT *sp) {
 void dumpspiceheaders(SPICEDAT *sp) {
    int nv, np;
    
-   printf("#title: %s", sp->title);
-   printf("#date: %s", sp->date);
-   printf("#plotname: %s", sp->plotname);
-   printf("#cflag: %d\n", sp->cflag);
-   printf("#binary: %d\n", sp->binary);
-   printf("#nvars: %d\n", sp->nvars);
-   printf("#npts: %d\n", sp->npts);
+   if (verbose) {
+       printf("#title: %s", sp->title);
+       printf("#date: %s", sp->date);
+       printf("#plotname: %s", sp->plotname);
+       printf("#cflag: %d\n", sp->cflag);
+       printf("#binary: %d\n", sp->binary);
+       printf("#nvars: %d\n", sp->nvars);
+       printf("#npts: %d\n", sp->npts);
+   }
 
    for (nv=0; nv<sp->nvars; nv++) {
       printf("#variable %d %s\n", nv, sp->varname[nv]);
