@@ -15,6 +15,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#define MAXTAB 64	// max number of analyses in deck
+
 typedef struct spicedat {
    char *title;		// title of deck
    char *date;		// date of run
@@ -33,6 +35,7 @@ char *skipblanks(char *s);
 char *prefix(char *s, char *p);
 SPICEDAT *read_header();
 void read_bin(SPICEDAT *sp); 
+void list_bin(SPICEDAT *sp); 
 SPICEDAT *newspicedat();
 void freespicedat(SPICEDAT *sp);
 void dumpspicedat(SPICEDAT *sp);
@@ -40,18 +43,23 @@ void dumpspiceheaders(SPICEDAT *sp);
 int lookup(SPICEDAT *sp, char *varname);
 void dumpvar(SPICEDAT *sp, int nv);
 
+SPICEDAT *sptab[MAXTAB];		// table of analyses
+int ntab=0;			// number of analyses
+
 char *progname;
 
 usage() {
     fprintf(stderr, "usage: %s [options] varnames ... < rawfile\n",progname);
     fprintf(stderr, "  [-h] print this help usage\n");
     fprintf(stderr, "  [-l] list only index to varnames\n");
+    fprintf(stderr, "  [-p <n>] operate on given analysis\n");
     fprintf(stderr, "  [-v] verbose\n");
     exit(3);
 }
 
 int dolist=0;	// do a listing
 int verbose=0;	// add in more verbosity
+int plotnum=0;	// default to first analysis
 
 int main(int argc, char **argv) {
    int i,x;
@@ -69,12 +77,15 @@ int main(int argc, char **argv) {
 
 
    progname = argv[0];
-   while ((c = getopt(argc, argv, "hlv?")) != -1) {
+   while ((c = getopt(argc, argv, "hlp:v?")) != -1) {
       switch(c) {
 	 default:
          case '?':
          case 'h':
 	    usage();
+	    break;
+         case 'p':
+	    plotnum=atoi(optarg);
 	    break;
          case 'l':
 	    dolist++;
@@ -90,7 +101,7 @@ int main(int argc, char **argv) {
 
    while(!feof(stdin)) {
        if (feof(stdin)) break;
-       if ((sp=read_header()) != NULL) {
+       while ((sp=sptab[ntab]=read_header()) != NULL) {
 
 	   total = sp->npts*sp->nvars;
 	   if (sp->cflag) {
@@ -101,12 +112,12 @@ int main(int argc, char **argv) {
 	   sp->data = (double *) malloc(total*sizeof(double));
 
 	   read_bin(sp);
+	   ntab++;
 	   break;
-
-       } else {
-	   exit(0);
-       }
+       } 
    }
+
+   sp = sptab[plotnum];
 
    // pre scan for variables 
    // bail out if we can't find them all
@@ -126,7 +137,15 @@ int main(int argc, char **argv) {
 
    if (argc==optind) {	// no vars listed, operate on all data
        if (dolist) {
-	   dumpspiceheaders(sp);	// print headers
+	   printf("# %s", sp->title);
+	   // printf("got %d analyses numbered 0:%d\n", ntab, ntab-1);
+	   for (i=0; i<ntab; i++) {
+	       sp = sptab[i];
+	       printf("# ---------------------\n");
+	       printf("# analysis %d: %s", i, sp->plotname);
+	       printf("# nvars %d: npts: %d\n", sp->nvars, sp->npts);
+	       dumpspiceheaders(sp);	// print headers
+	   }
        } else {
 	   dumpspiceheaders(sp);	// print headers
 	   dumpspicedat(sp);	// print out data tables
@@ -184,18 +203,18 @@ int lookup(SPICEDAT *sp, char *varname) {
 void dumpspiceheaders(SPICEDAT *sp) {
    int nv, np;
    
+   printf("# title: %s", sp->title);
+   printf("# date: %s", sp->date);
+   printf("# plotname: %s", sp->plotname);
    if (verbose) {
-       printf("#title: %s", sp->title);
-       printf("#date: %s", sp->date);
-       printf("#plotname: %s", sp->plotname);
-       printf("#cflag: %d\n", sp->cflag);
-       printf("#binary: %d\n", sp->binary);
-       printf("#nvars: %d\n", sp->nvars);
-       printf("#npts: %d\n", sp->npts);
+       printf("# cflag: %d\n", sp->cflag);
+       printf("# binary: %d\n", sp->binary);
+       printf("# nvars: %d\n", sp->nvars);
+       printf("# npts: %d\n", sp->npts);
    }
 
    for (nv=0; nv<sp->nvars; nv++) {
-      printf("#variable %d %s\n", nv, sp->varname[nv]);
+      printf("# variable %d %s\n", nv, sp->varname[nv]);
    }
 }
 
@@ -270,12 +289,28 @@ char *strsave(char *s)   /* save string s somewhere */
     return(p);
 }
 
+// if the vars are left like "v(4)" you can't
+// specify them on the command line without quoting
+// the parenthesis, so we take 'em out
+
+void editname(char *s) { /* edit variable name */
+   char *p;
+
+   for (p=s; *s !='\0'; s++) {
+      *p = *s;
+      if (*s != '(' && *s != ')') {
+         p++;
+      }
+   }
+   *p = '\0';
+}
+
 SPICEDAT *read_header() {
    char *arg;
    char s[1024];   
    int err=1;
    SPICEDAT *sp;
-   int debug=1;
+   int debug=0;
    int nvars, npts;
 
    sp=newspicedat();
@@ -334,6 +369,7 @@ SPICEDAT *read_header() {
 	   if (debug) printf("header line    : %s", s);
 	   if (sscanf(s, "%d %s %s", &varnum, strbuf, strtype) == 3) {
 	      if (debug) printf("%d %s %s\n", varnum, strbuf, strtype);
+	      editname(strbuf);
 	      sp->varname[varnum] = strsave(strbuf);
 	   } else {
 	       printf("unparsed header line    : %s", arg);
@@ -347,6 +383,37 @@ SPICEDAT *read_header() {
       return(NULL);
    }
    return(sp);
+}
+
+void list_bin(SPICEDAT * sp)
+{
+    int i, v, p;
+    double d;
+    double e;
+    char bytes[8];
+    double *dp = sp->data;
+
+    if (sp->binary != 1) {
+	fprintf(stderr, "can't parse non-binary rawfile!\n");
+	exit(1);
+    } else {
+	for (p = 0; p < sp->npts; p++) {
+	    for (v = 0; v < sp->nvars; v++) {	// read simulation vars
+		if (!sp->cflag) {
+		    fread(&bytes, sizeof(bytes), 1, stdin);
+		    d = *((double *) bytes);
+		    *dp = d; dp++;
+		} else {
+		    fread(&bytes, sizeof(bytes), 1, stdin);
+		    d = *((double *) bytes);	// real
+		    fread(&bytes, sizeof(bytes), 1, stdin);
+		    e = *((double *) bytes);	// imag
+		    *dp = d; dp++;
+		    *dp = e; dp++;
+		}
+	    }
+	}
+    }
 }
 
 void read_bin(SPICEDAT * sp)
