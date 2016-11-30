@@ -37,6 +37,8 @@ SPICEDAT *newspicedat();
 void freespicedat(SPICEDAT *sp);
 void dumpspicedat(SPICEDAT *sp);
 void dumpspiceheaders(SPICEDAT *sp);
+int lookup(SPICEDAT *sp, char *varname);
+void dumpvar(SPICEDAT *sp, int nv);
 
 char *progname;
 
@@ -59,6 +61,7 @@ int main(int argc, char **argv) {
    int complexflag;
    int total;
    SPICEDAT *sp;
+   int n;
 
    int c, errflag=0;
    extern char *optarg;
@@ -66,8 +69,10 @@ int main(int argc, char **argv) {
 
 
    progname = argv[0];
-   while ((c = getopt(argc, argv, "hlv")) != -1) {
+   while ((c = getopt(argc, argv, "hlv?")) != -1) {
       switch(c) {
+	 default:
+         case '?':
          case 'h':
 	    usage();
 	    break;
@@ -82,12 +87,6 @@ int main(int argc, char **argv) {
 
    // if (dolist) printf("dolist\n");
    // if (verbose) printf("verbose\n");
-   // for (i=0; i<(argc-optind); i++) {
-   //    printf("%s\n", argv[optind+i]);
-   // }
-
-   // exit(1);
-
 
    while(!feof(stdin)) {
        if (feof(stdin)) break;
@@ -109,14 +108,39 @@ int main(int argc, char **argv) {
        }
    }
 
-   if (dolist) {
-       dumpspiceheaders(sp);	// print headers
-   } else {
-       dumpspiceheaders(sp);	// print headers
-       dumpspicedat(sp);	// print out data tables
-   }
-   freespicedat(sp);
+   // pre scan for variables 
+   // bail out if we can't find them all
 
+   int error=0;
+   for (i=0; i<(argc-optind); i++) {
+      if (lookup(sp, argv[optind+i]) == -1) {
+	 fprintf(stderr,"can't find variable %s in rawfile\n",argv[optind+i]);
+	 error++;
+      }
+      // printf("found variable %s at index %d\n", argv[optind+i], n);
+   }
+   if (error) {
+      exit(4);
+   }
+
+
+   if (argc==optind) {	// no vars listed, operate on all data
+       if (dolist) {
+	   dumpspiceheaders(sp);	// print headers
+       } else {
+	   dumpspiceheaders(sp);	// print headers
+	   dumpspicedat(sp);	// print out data tables
+       }
+   } else {		// dump specific variables
+       for (i=0; i<(argc-optind); i++) {
+	  // prechecked these so should be good...
+	  n=lookup(sp, argv[optind+i]);
+	  dumpvar(sp,n);
+	}
+   }
+
+
+   freespicedat(sp);
    exit(1);
 }
 
@@ -147,6 +171,16 @@ void freespicedat(SPICEDAT *sp) {
     free (sp->data);
 }
 
+int lookup(SPICEDAT *sp, char *varname) {
+   int nv;
+   for (nv=0; nv<sp->nvars; nv++) {
+      if (strcmp(varname, sp->varname[nv])==0) {
+         return (nv);
+      }
+   }
+   return(-1);
+}
+
 void dumpspiceheaders(SPICEDAT *sp) {
    int nv, np;
    
@@ -162,6 +196,27 @@ void dumpspiceheaders(SPICEDAT *sp) {
 
    for (nv=0; nv<sp->nvars; nv++) {
       printf("#variable %d %s\n", nv, sp->varname[nv]);
+   }
+}
+
+void dumpvar(SPICEDAT *sp, int nv) {
+   int np;
+   double *data = sp->data;
+
+   for (np = 0; np<sp->npts; np++) { 	// print out data array
+       // for (nv = 0; nv<sp->nvars; nv++) {
+	  if (sp->cflag) {
+	      printf("%0.12g %0.12g %0.12g ", 
+		    data[2*(np*sp->nvars + 0)], 
+		    data[2*(np*sp->nvars + nv)], 
+		    data[2*(np*sp->nvars + nv)+1]);
+	  } else {
+	      printf("%0.12g %0.12g ", 
+		    data[np*sp->nvars + 0],
+		    data[np*sp->nvars + nv]);
+	  }
+       // }
+       printf("\n");
    }
 }
 
@@ -220,7 +275,7 @@ SPICEDAT *read_header() {
    char s[1024];   
    int err=1;
    SPICEDAT *sp;
-   int debug=0;
+   int debug=1;
    int nvars, npts;
 
    sp=newspicedat();
