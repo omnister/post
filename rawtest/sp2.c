@@ -310,7 +310,7 @@ SPICEDAT *read_header() {
    char s[1024];   
    int err=1;
    SPICEDAT *sp;
-   int debug=0;
+   int debug=1;
    int nvars, npts;
 
    sp=newspicedat();
@@ -372,10 +372,10 @@ SPICEDAT *read_header() {
 	      editname(strbuf);
 	      sp->varname[varnum] = strsave(strbuf);
 	   } else {
-	       printf("unparsed header line    : %s", arg);
+	       printf("unparsed header line1    : <%s>\n", s);
 	   }
 	} else {
-	   printf("unparsed header line    : %s", arg);
+	   printf("unparsed header line2    : <%s>\n", s);
 	}
    }
    if (err) {
