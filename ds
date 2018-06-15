@@ -1,0 +1,18 @@
+DECK=`echo $1 | sed -e s/.cki//`
+
+# check if we need to run spice to get an up to date rawfile
+# needsmade(1) is in the nrm(1) package
+
+needsmade $DECK.cki $DECK.raw
+
+if [ $? -eq 0 ]
+then
+    # must run spice
+    ngspice -b $DECK.cki -o $DECK.out -r $DECK.raw  && post -r $DECK.raw
+else
+    # already up to date
+    echo "not running spice, already up to date"
+    post -r $DECK.raw
+fi
+
+
