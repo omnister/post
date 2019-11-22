@@ -1,18 +1,35 @@
-DECK=`echo $1 | sed -e s/.cki//`
+#!/bin/bash
+#
+# usage: run <deck>
+#
+# if <deck>.cki is newer than <deck>.raw, run spice,
+# if no SPICE errors, then run post on <deck>.raw
+#
+# RCW 2/17/2014
+#
 
-# check if we need to run spice to get an up to date rawfile
-# needsmade(1) is in the nrm(1) package
+# Allow user to run <deck> <deck.raw> or <deck.cki>
+DECK=`echo $1 | sed -e 's/.cki$//' -e 's/.raw$//'`
 
-needsmade $DECK.cki $DECK.raw
+SPICE="ngspice -b $DECK.cki -r $DECK.raw -o $DECK.txt"
+POST="post -r $DECK.raw"
 
-if [ $? -eq 0 ]
-then
-    # must run spice
-    ngspice -b $DECK.cki -o $DECK.out -r $DECK.raw  && post -r $DECK.raw
-else
-    # already up to date
-    echo "not running spice, already up to date"
-    post -r $DECK.raw
+if [ "$DECK" == "" ] ; then
+    echo "    usage: $0 <deck>"
+    exit;
 fi
 
+if [[ $DECK.cki -nt $DECK.raw ]];
+then
+   # echo src is newer - do the build;
+   $SPICE && $POST
+else
+   # complain if no raw file
+   if [ -f $DECK.raw ] 
+   then
+       $POST
+   else
+       echo "$0: can't open $DECK.raw"
+   fi
+fi
 

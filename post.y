@@ -1,5 +1,4 @@
 /* complex waveform calculator */
-/* I must have *, 3I not allowed anymore */
 /* need to add back yvalue() */
 
 %{

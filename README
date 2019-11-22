@@ -1,4 +1,9 @@
-a graphing post processor for SPICE files
+NAME 
+
+PDpost - an interactive language for post-processing and plotting of SPICE files
+
+Synopsis
+
 Richard Walker
 released under GPL v2.0
 

@@ -35,7 +35,7 @@ clean:
 install: post sp
 	cp  post $(BIN)/post
 	cp  sp $(BIN)/sp
-	#cp  post.1 $(MAN)/post.1
+	cp  post.1 $(MAN)/post.1
 	mkdir -p /usr/local/src/cmd/post
 	cp * /usr/local/src/cmd/post
 
