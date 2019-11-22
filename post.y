@@ -4,11 +4,18 @@
 
 %{
 
+#include <stdlib.h>
 #include "post.h"
 #include "script.h"
 #define YYDEBUG 1
 
 char buf[128];
+int     bflag=0;
+int 	gnuplot=0;
+int 	yylex();
+void stringupdate(DATUM *d, char *b);
+void yyerror(char *s);
+int comment(void);
 
 %}
 
@@ -339,7 +346,6 @@ jmp_buf begin;
 
 char 	*progname;
 int 	lineno = 1;
-int yylex();
 jmp_buf begin;
 int	indef;
 char	*infile;    /* input file name */
@@ -347,8 +353,6 @@ FILE	*fin;	    /* input file pointer */
 char	**gargv;    /* global argument list */
 int	gargc;
 double  getdouble();
-int 	gnuplot=0;
-int     bflag=0;
 
 int	c;	    /* global for use by warning() */
 int     yyparse();
@@ -537,30 +541,6 @@ int c;
     return c;
 }
 
-
-int comment()	/* strip out a potential comment */
-{
-    int yylex();
-    int c = rlgetc(fin);
-    int done = 0;
-
-    if (c != '*') { /* return if not in a comment */
-	rl_ungetc(c,fin);
-	return '/';
-    }
-
-    do {
-	if((c=rlgetc(fin)) == '*') {
-	    if((c=rlgetc(fin)) == '/') {
-		done++;
-	    } else {
-		rl_ungetc(c,fin);
-	    }
-	}
-    } while (done==0);
-    return(yylex());
-}
-
 int yylex()
 {
     int c;
@@ -675,9 +655,29 @@ int yylex()
     return rval;
 }
 
+int comment()	/* strip out a potential comment */
+{
+    int c = rlgetc(fin);
+    int done = 0;
 
-void yyerror(s)	/* report compile-time error */
-char *s;
+    if (c != '*') { /* return if not in a comment */
+	rl_ungetc(c,fin);
+	return '/';
+    }
+
+    do {
+	if((c=rlgetc(fin)) == '*') {
+	    if((c=rlgetc(fin)) == '/') {
+		done++;
+	    } else {
+		rl_ungetc(c,fin);
+	    }
+	}
+    } while (done==0);
+    return(yylex());
+}
+
+void yyerror(char *s)	/* report compile-time error */
 {
     void warning();
     warning(s, (char *)0);

@@ -25,7 +25,7 @@ int digest = 0; 	/* set to 1 for quick non-zoomable plots */
 
 PLOTSPEC plottab[MAXPLOTELEMENTS];
 
-char title[MAXBUF];
+char title[2*MAXBUF];
 
 static int num;		// number of plots
 
@@ -130,9 +130,9 @@ void graphprint_pd(int mode) {		/* pdplot */
     plottime = time(NULL);
     strftime(buf, MAXBUF, "%m/%d/%y-%H:%M:%S", localtime(&plottime));
     if ((pn=rawfile_name()) == NULL) {
-	snprintf(title, MAXBUF, "title <stdin> - %s\n", buf);
+	sprintf(title, "title <stdin> - %s\n", buf);
     } else {
-	snprintf(title, MAXBUF, "title %s - %s\n", pn, buf);
+	sprintf(title, "title %s - %s\n", pn, buf);
     }
 
     switch(mode) {
