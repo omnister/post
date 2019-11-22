@@ -1,0 +1,539 @@
+.de L
+.B \\$1 \\$2 \\$3 \\$4 \\$5 \\$6
+..
+.de EX
+.ft B
+.nf
+..
+.de EE
+.ft R
+.fi
+..
+.TH POST 1
+.SH NAME 
+Post \- an interactive language for post-processing and plotting of SPICE files
+.SH SYNOPSIS
+.B Post
+[-g (use gnuplot)] [-r <rawfile>] [<script> [<script>...]] [-]
+.SH
+DESCRIPTION
+.B Post
+provides an interactive shell for doing math on Piece-Wise-Linear (PWL) SPICE waveforms.  
+.SS STARTUP
+.B Post
+will start up interactively if given no arguments providing a ":" prompt
+in your terminal window.  The command line interface defaults to and
+"emacs" key mapping but can be switched to "vi" mode by having a
+.I ".inputrc" 
+file in your home directory which looks like:
+.sp 
+.DS
+    -------------- cut here ---------------
+    # this is the gnu-readline configuration file
+    # save in ~/.inputrc
+
+    set editing-mode vi
+    set keymap vi
+    -------------- cut here ---------------
+.DE
+.PP
+If you want 
+.B Post
+to simply run a script and exit, you can invoke it
+with the name of the file as an argument. 
+.PP
+If you have waveform definition files for 
+.B Post
+you can put them in file and load them at start up time with 
+.B "post <script1> [<script2> ..].  -".  
+.B Post
+will load all listed files into memory. 
+The final "-" drops into interactive mode after loading
+everything. 
+.SS SPICE RAWFILES
+.PP
+If you'd like 
+.B Post
+to load up a particular rawfile before giving you
+a prompt, you can use the 
+.B "-r <rawfile>"
+command line option.
+.PP
+If you don't give the rawfile name at startup, you can get a list of
+loadable spice raw files by typing "ls" at the command
+prompt.  You can then load your selected rawfile at the
+prompt by typing
+.DS
+
+        : ci "<rawfile.raw>" # The filename must be in quotes.  
+.DE
+.PP    
+The waveforms in the rawfile are loaded into a symbol table as
+PWL variables.  
+.B Post 
+massages the 
+.B SPICE 
+waveform names slightly to make
+them unambiguous to the parser.  For instance, a node named "1" in
+.B SPICE 
+is read in as "v1" to allow the parser to distinguish the
+signal name  from an integer.  
+.PP    
+A list of loaded variables can be obtained by typing "di" (display)
+at the interactive prompt.  In addition to dependant variables from
+the 
+.B SPICE 
+deck, there will be a synthetic time variable that can be
+used for making calculations as a function of the time axis. 
+.PP
+.SS COMMENTS
+.B Post
+ignores anything from a "#" character to the end of the line.
+C-style comments "/* .... */" are also recognized and can be used in
+scripts to comment out multiple lines.
+.SS EXPRESSIONS
+.PP
+Waveforms can be mathematically processed by typing expressions at
+the prompt.  
+.PP
+Most binary operations can be performed with any combination of
+scalars and PWL variables.
+The result of a binary math operation between two
+waveforms is another waveform which can be assigned to a new
+variable.  For instance, the differential voltage between v1 and v2
+can be computed and saved with the statement:
+.sp
+.DS
+    : vdiff = v2-v1
+.DE
+.PP
+This new variable can then be used just like any of the
+original SPICE PWL waveforms.
+.SH PLOTTING
+Waveforms can be plotted with the "gr" command.  The "gr" command
+will create an X11 window with a graph of the selected variables. 
+By default, 
+.B Post
+uses 
+.B PDplot(1)
+as the plotting program.  
+.B Gnuplot(1)
+can be used instead by specifying the -g option. 
+In either case, you will need to install your graphing program of
+choice. 
+.TP
+.I gr
+You can graph any number of expressions on the same graph with "gr". 
+
+    : gr a,b,c
+
+You can plot two groups of variables on separate axes with
+
+    : gr a,b,c ; d, e, f
+
+.TP
+.I xl
+You can limit the xaxis range with "xl <start>,<stop>".  This
+will apply to all axes.  If xl is used twice on a command line,
+the last one will take precedence:
+
+    : gr a,b ; d,e xl .1,1.8
+
+.TP
+.I yl
+Each graph can have its yaxis range set with "yl <min>,<max>"
+
+        : gr a,b yl -1,1; d,e yl -2,2 xl .1,1.8
+
+The rule is that each expression or PWL name must be separated from any
+other PWL or expression by either a "," or a ";".   A semicolon creates
+second plot.
+.TP
+.I logx
+Adding "logx" to a plot command will plot the data on a
+logarithmic x scale.
+.TP
+.I logy
+Adding "logy" to a plot command will plot the data on a
+logarithmic y scale.
+.PP
+.SH COMMANDS:
+
+gr gs ci di  ls pr print quit exit bye
+
+.SH NUMBERS
+Numbers can be real or complex. All numbers are cast to double precision. 
+.PP
+Reference to an undefined name automatically creates a zero-valued
+variable.
+.PP
+Engineering notation is supported.  In addition the following engineering
+suffixes are allowed when specifying numbers.
+.TP
+.I A,a
+1e-18 (abbreviation for atto-)
+.TP 
+.I F,f
+1e-15 (abbreviation for femto-)
+.TP
+.I P,p
+1e-12 (abbreviation for pico-)
+.TP
+.I N,n
+1e-9 (abbreviation for nano-)
+.TP
+.I U,u
+1e-6 (abbreviation for micro-)
+.TP
+.I M,m
+1e-3 (abbreviation for milli-)
+.TP
+.I % 
+1e-2 (abbreviation for percent)
+.TP
+.I K,k
+1e3 (abbreviation for kilo-)
+.TP
+.I  Meg,meg
+1e6 (abbreviation for mega-)
+.TP
+.I G,g
+1e9 (abbreviation for giga-)
+.TP
+.I T,t
+1e12 (abbreviation for tera-)
+.SS COMPLEX NUMBERS
+The variable name "i" and "I" are both equal to the imaginary number
+sqrt(-1).  You can create a pure imaginary number with "3i", or "3*i". 
+Mixed numbers are written as "1+i" or 1+3*i" or "1+3i". 
+Some examples of valid numbers are:
+.DS
+   :i
+        i
+   :3i
+        3i
+   :3n*i
+        3e-09i
+   :1p+i
+        1e-12+i
+.DE
+.SH VARIABLES
+Variables names must start with any alphabetic character or the "_"
+character.  The remainder of the variable name must be composed of
+any alphanumeric character, or the characters "_<>".
+.PP
+Piecewise linear waveforms can be defined using the following
+syntax
+.DS
+    :a = {0,0; 1,4; 3,4; 4,3}
+.DE
+.PP
+a list of independant value, dependant value pairs.  It is required that
+the independant value be in strict monotonic rising order.  For many
+engineering applications the independant variable will be either time or
+frequency, however it can also represent space, or any other parameter
+such as a resistor value in circuit. 
+.SS PWL as a FUNCTION
+As implemented, a PWL can be thought of as both a data-type and a
+function.  if a is defined as above then a(1) will return 4. a(2) also
+returns 4 by interpolation.  a(sqrt(4)) will return 4.0.  This
+functional notation replaces the yvalue() function of HP's post. 
+.SS EXPRESSIONS
+Piecewise linear (PWL) variables can be treated like normal scalars. 
+Generally 
+.B post
+will do the obvious, most useful thing.  Adding two PWLs
+with 
+        : c=a+b
+
+will add them point by point, cross-interpolating where necessary.  The
+output PWL will always include a value at every independant variable 
+point defined in either of the input PWLs.
+
+The output PWL is defined only at the intersection of the of the
+span of each PWL's independant variable.  For instance, you can
+define two PWL's with
+
+        : a = {0,0; 1,1}
+        : b = {0.5,1; 1.5,2}
+
+and the addition of a,b yields
+
+        : pr a+b
+            {
+                0.5,1;
+                1,1.5;
+            }
+                
+Which is only defined over the overlap of a,b.
+
+There is currently only one fundamental data type in 
+.B Post().
+This is the DATUM which is currently defined as a doubly linked list:
+
+        typedef struct datum {
+             double iv;         /* independant variable, usually time or freq */
+             double re;         /* real part */
+             double im;         /* imaginary part */
+             struct datum *next;
+             struct datum *prev;
+        } DATUM
+
+Simple scalars like "0.0", "1+2i", "-4i" are just DATUMS with *next
+pointing to NULL.  A piece-wise linear (PWL) such as "a = {0,0; 1,1;
+2,i}" is implemented as a doubly-linked list of datums defined in such a
+way that appending new items is fast.  (this is done by keeping the
+*prev link of the first element pointing at the last element so we don't
+have to walk the list to add a new element to the end). 
+
+.SH BUILT-IN FUNCTIONS
+In the summaries below, a single scalar DATUM is notated as "d" and a
+PWL list is notated as "p".  The expression "p(k)" is evaluated at every
+breakpoint in the PWL. 
+
+In general, when a math operation is performed on two PWLs, the
+operation is done point by point with cross interpolation whenever the
+two PWLs differ in their independant variables.  A math operation
+between a PWL and a scalar DATUM generally takes the DATUM value as
+applying over all time or frequency. 
+
+Operations between two scalar DATUMs is just the ordinary math that one
+would expect. 
+
+In cases where complex definitions are awkward, the real value is used. 
+An example is the max(p1,p2) function.  In most cases, it is expected
+that it is the maximum real value that is compared.  Although only the
+real value is compared, the entire complex value of the maximum segment
+is copied to the output.  This allows the max/min functions to be used
+as a multiplexer. 
+.DS
+        /* given two real signals siga, sigb, and select signal */
+        /* "mux" that is greater than 0 when we want to select siga, */
+        /* a multiplexor can be implemented as: */
+
+        a=re(siga)*i+re(mux)
+        b=re(sigb)*i+0.0
+        output = -i*max(a,b)
+.DE
+
+.TP
+.SS AVERAGE 
+.DS
+    p3=avg(p1,p2)       ;p3(k) = (p1(k)+p2(k))/2
+    d3=avg(d1,d2)       ;d3 = (d1+d2)/2
+    p3=avg(d1,p1)       ;p3(k) = (p1(k)+d1)/2
+    p3=avg(p1,d1)       ;p3(k) = (p1(k)+d1)/2
+    d=avg(p)            ;compute average value of a single PWL
+.DE
+.TP
+.SS DECIBEL
+.DS
+    p=db(p)             ;return 20*log10(mag(p))
+    d=db(d)             ;return 20*log10(mag(d))
+.DE
+.TP
+.SS DERIVATIVE
+.DS
+    p2=dt(p1)           ;uses global variable DT, default = 1u
+.DE                     ;p2 = (delay(p1,-DT/2)-delay(p1,DT/2))/DT
+.TP
+.SS EXPONENTIAL 
+.DS  
+    p2=exp(p1)          ;p2(k) = e^p1(k)
+.DE
+.TP
+.SS INTEGRAL
+.DS
+    p2=integral(p1)     ;return the running integral of p1*dt
+                        ;definite integral from a to b = p2(b)-p2(a)
+.DE
+.TP
+.SS LOGARITHM
+.DS
+    p2=ln(p1)           ;p2(k) = ln(p1(k))
+    p2=log10(p1)        ;p2(k) = ln(p1(k))/ln(10)
+    p2=log(p1)          ;p2(k) = ln(p1(k))/ln(10)
+.DE
+.TP
+.SS LOW PASS FILTER
+.DS
+   p2 = lpf(p1, tau)    ; filters a (possibly unevenly sampled) PWL p1
+                        ; with RC time constant tau. returns a new 
+                        ; filtered PWL that is evenly sampled in time
+                        ; with spacing = tau/16.0.  A high-pass coupling
+                        ; can be created with "1-lpf()".
+.DE
+.TP
+.SS MAGNITUDE
+.DS
+    p2=mag(p1)          ;p2(k) = sqrt( (p1(k).re)^2 + (p1(k).im)^2 )            
+.DE
+.TP
+.SS MODULUS
+.DS 
+    p2=mod(p1,p2)       ;p3.re = fmod(p1.re, p2.re)
+                        ;p3.im = 0.0;
+.DE
+.TP
+.SS MAXIMUM/MINIMUM
+.DS
+    p3=max(p1,p2)       ;p3 = (p1(k).re > p2(k).re)?p1(k):p2(k)
+    d=max(p1)           ;find k where p1(k).re is maximum, return p1(k)
+                        ;note: decision is made on real value, but 
+                        ;complex value is returned.
+
+    min(p1,p2)          ;p3 = (p1(k).re < p2(k).re)?p1(k):p2(k)
+    d=min(p1)           ;find k where p1(k).re is minimum, return p1(k)
+                        ;note: decision is made on real value, but 
+                        ;complex value is returned.
+.DE
+.TP
+.SS PAUSE
+.DS
+    pause(<expression>) ;post will sleep(2) for expression.re seconds.
+                        ;If an interrupt (usually ^C) is received, the
+                        ;pause will be aborted, returning to normal 
+                        ;command flow.  Pause is handy inside a script
+                        ;for putting between graph commands so the user 
+                        ;can page through multiple graph results with ^C.
+                        ;pause() returns the number of seconds remaining
+                        ;to wait.  If you don't want this number printed
+                        ;then assign it to a scratch variable eg:
+                        ;"tmp=pause(10000)"
+.DE
+.TP
+.SS PHASE
+.DS
+    p2=pha(p)           ;p2(k) = atan2(p(k).im, p(k).re)
+    d2=pha(d)           ;d2 = atan2(d.im, d.re)
+.DE
+.TP
+.SS POWER
+.DS
+    p3=pow(p1,p2)       ;p3(k) = p1(k)^p2(k)
+    p3=pow(p1,d2)       ;p3(k) = p1(k)^d
+    d=pow(d1,d2)        ;d = d1^d2
+
+    p3=p1^p2            ;alternative ways of computing a^b
+    d3=d1^d2
+    d3=p1^d1
+.DE
+.TP
+.SS PRINT
+.DS
+    print [<exp> | <string> | ","]*
+    Print any combination of expressions and strings.  Combining
+    terms without a comma "," results in concatenation of the fields.
+    Using a comma will pad the fields with a space.
+
+    pr <exp>            ;print the value of expression
+    print <exp>         ;print the value of expression
+
+    Examples:
+
+    > a=5
+    > print a
+        5
+
+    > print "a=" a
+        a=5
+
+    > print "a =", a
+        a = 5
+.DE
+.TP
+.SS PLOT
+.DS
+    gr <exp>            ;graph an expression on a new graph
+    gs <exp>            ;graph on the same graph 
+
+                        ;for example you can graph a and b 
+                        ;the same plot with
+                        ;"gr a; gs b"
+.DE
+
+.TP
+.SS REAL/IMAGINARY PART
+.DS
+    p2=re(p1)           ;p2(k) = p1(k).re
+    d2=re(d)            ;d2 = d.re
+
+    p2=im(p1)           ;p2(k) = imaginary part of p1(k)
+    d2=im(d)            ;d2 = d.im
+.DE
+
+.TP
+.SS SPICE RAW FILES
+.DS
+    ls                  ; list all raw files in the current directory
+    ci "file.raw"       ; load the raw file "file". Quotes are required
+    di                  ; display the names of all loaded variables
+.DE
+
+.TP
+.SS SQUARE ROOT
+.DS
+    p2=sqrt(p1)         ; same as pow(p,0.5)
+.DE
+
+.TP
+.SS TIME DELAY
+.DS
+    p3=warp(p1,d)       ; timeshift a signal by delay d
+                        ; p3(k+d) = p1(k)
+    p3=warp(p1,p2)      ; use one PWL to phase modulate another
+                        ; the delay amount is read from p2(k)
+                        ; p3(k+p2(k).re) = p1(k)
+    p3=delay(p1,d)      ; delay is a synonym for warp...
+.DE
+
+.TP
+.SS UNIT INTERVAL / EYE DIAGRAM PLOTS
+.DS
+    p2=ui(p1)           ; compute the value of the unit interval as a function of time:
+                        ; for every pair of positive zero crossings in p1, create
+                        ; a data point in p2 with iv set to the iv of the second zero
+                        ; crossing and the dv set to the time between the two crossings.
+                        ; eg: for a VCO, frequency can be approximated by 1/ui(vout)
+.DE
+
+.TP
+.SS VERSUS (making eye diagrams)
+.DS
+    gr versus(p1,p2)    ; return a new PWL with the re/im part determined by
+                        ; p1, and the independant variable (time/frequency) 
+                        ; set by p2.re.
+
+    gr versus(p1,mod(time, 160p))
+                        ; plots the p1 waveform with modular time axis
+                        ; (an eye diagram)...
+
+    gr versus(p1,mod(time+82p, 160p))
+                        ; shifts the center of the eye diagram by 82p
+
+                        ; since versus() returns a PWL with a non-monotonic
+                        ; independant variable, it will not usually be useful
+                        ; to do anything other than plot the result.
+.DE
+
+.TP
+.SS ZERO CROSSING MEASUREMENT
+.DS
+    p3=xcross(p1,p2)
+    p3=xcrossp(p1,p2)
+    p3=xcrossn(p1,p2)   ; let n=(int)p2.re, find nth zero crossing (xcross),
+                        ; nth negative-going zero crossing (xcrossn), or 
+                        ; nth positive going zero crossing (xcrossp) of 
+                        ; p1(xc).re. set p3.re=xc.  If n==0, return all
+                        ; zero crossings as a PWL with iv set to n, .re 
+                        ; set to crossing time.  Can then extract nth
+                        ; crossing with p3(n). If n is negative, will return
+                        ; nth crossing counted from the end of the waveform
+.DE
+
+                        
+
+.SH AUTHOR
+Richard Walker
+.SH LICENSE
+released under GPL v2.0
