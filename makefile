@@ -36,7 +36,7 @@ install: post sp
 	cp  post $(BIN)/post
 	cp  sp $(BIN)/sp
 	cp  ds $(BIN)/ds
-	#cp  post.1 $(MAN)/post.1
+	cp  post.1 $(MAN)/post.1
 	#mkdir -p /usr/local/src/cmd/post
 	#cp * /usr/local/src/cmd/post
 
@@ -65,25 +65,11 @@ depend: ${OBJ}
 #-----------------------------------------------------------------
 # DO NOT PUT ANY DEPENDENCIES AFTER THE NEXT LINE -- they will go away
 # DO NOT DELETE OR MODIFY THIS LINE -- make depend uses it
-com_ci_new.o: post.h
-com_ci_new.o: ss_wavefile.h
-com_ci_new.o: y.tab.h
-com_ci_old.o: post.h
-com_ci_old.o: ss_wavefile.h
-com_ci_old.o: y.tab.h
 com_ci.o: post.h
 com_ci.o: ss_wavefile.h
 com_ci.o: y.tab.h
 com_ls.o: post.h
 datum.o: post.h
-gnew.o: post.h
-gnew.o: script.h
-gold.o: post.h
-gold.o: script.h
-g.o: post.h
-g.o: script.h
-graph.old.o: post.h
-graph.old.o: script.h
 graph.o: post.h
 graph.o: script.h
 init.o: post.h

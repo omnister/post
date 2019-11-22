@@ -45,12 +45,16 @@ static struct {	    /* constants */
     double re;
     double im;
 } consts[] = {
-    {"PI",	3.14159265358979323846,0.0},
-    {"E",	2.71828182845904523536,0.0},
-    {"GAMMA",	0.57721566490153286060,0.0}, /* Euler */
+    {"BOLTZ",   1.3806226e-23,0.0},          /* boltzmans constant */
+    {"CHARGE",  1.6021918e-19,0.0},          /* electron charge */
+    {"KELVIN",  273.15,0.0},                 /* centigrade to absolute */
     {"DEG",     57.29577951308232087680,0.0},/* deg/radian */
-    {"PHI",	1.61803398874989484820,0.0}, /* golden ratio */
     {"DT",	1e-6,0.0}, 		     /* default integration delta */
+    {"E",	2.71828182845904523536,0.0},
+    {"EPS0",	8.854214871e-12,0.0},	     /* vacuum permittivity */
+    {"GAMMA",	0.57721566490153286060,0.0}, /* Euler */
+    {"PHI",	1.61803398874989484820,0.0}, /* golden ratio */
+    {"PI",	3.14159265358979323846,0.0},
     {0,		0.0, 0.0}
 };
 
