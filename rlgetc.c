@@ -18,7 +18,7 @@ int pushback = '\0';
 
 #include <signal.h>
 #include <setjmp.h>
-jmp_buf begin;
+// jmp_buf begin;
 
 char    *rl_gets();
 
