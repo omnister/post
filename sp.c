@@ -51,9 +51,10 @@ main(int argc, char **argv)
 	int r_flag = 0;
 	int errflg = 0;
 	char *filetype = NULL;
+	char *signame = NULL;
 	int c;
 
-	while ((c = getopt (argc, argv, "ilrt:v")) != EOF) {
+	while ((c = getopt (argc, argv, "iln:rt:v")) != EOF) {
 		switch(c) {
 		case 'i':
 			i_flag = 1;
@@ -63,6 +64,9 @@ main(int argc, char **argv)
 			break;
 		case 'l':
 			l_flag = 1;
+			break;
+		case 'n':
+			signame = optarg;
 			break;
 		case 'r':
 			r_flag = 1;
@@ -81,6 +85,7 @@ main(int argc, char **argv)
 	    fprintf(stderr, "     [-i] ; information listing \n");
 	    fprintf(stderr, "     [-t <filetype>] ; override filetype autosense\n");
 	    fprintf(stderr, "     [-l] ; list all waveform values \n");
+	    fprintf(stderr, "     [-n <signame>] ; list values for <signame>\n");
 	    fprintf(stderr, "     [-v] ; verbose debugging info\n");
 	    exit(1);
 	}
@@ -134,13 +139,15 @@ main(int argc, char **argv)
 	if(l_flag) {
 
 		/* print header showing all signal names */
-		printf("#[xxx]    %10s", wf->iv->wv_name);		/* independent variable */
+		// printf("#[xxx]    %10s", wf->iv->wv_name);		/* independent variable */
+		printf("# %10s", wf->iv->wv_name);		/* independent variable */
 		for(i = 0; i < wf->wf_ndv; i++) {
 			printf(" %10s", wf->dv[i].wv_name);		/* dependent variables */
 		}
 		putchar('\n');
 		for(j = 0; j < wf->nvalues; j++) {
-			printf("[%03d] %10g", j, wds_get_point(wf->iv->wds, j));
+			// printf("[%03d] %10g", j, wds_get_point(wf->iv->wds, j));
+			printf("%10g", wds_get_point(wf->iv->wds, j));
 			for(i = 0; i < wf->wf_ndv; i++) {
 			    switch (wf->dv[i].wv_ncols) {
 				case 1:
@@ -160,6 +167,46 @@ main(int argc, char **argv)
 			}
 			putchar('\n');
 		}
+	}
+
+	int sigindex=-1;
+
+	if (signame != NULL) {
+		/* print header showing all signal names */
+		// printf("#[xxx]    %10s", wf->iv->wv_name);		/* independent variable */
+		printf("# %10s", wf->iv->wv_name);		/* independent variable */
+		for(i = 0; i < wf->wf_ndv; i++) { 		/* dependent variables */
+			if (strcmp(wf->dv[i].wv_name,signame) == 0) {
+			    printf(" %10s", wf->dv[i].wv_name);	
+			    sigindex=i;
+			}
+		}
+		putchar('\n');
+
+		if (sigindex != -1) {
+		for(j = 0; j < wf->nvalues; j++) {
+			// printf("[%03d] %10g", j, wds_get_point(wf->iv->wds, j));
+			printf("%10g", wds_get_point(wf->iv->wds, j));
+			switch (wf->dv[sigindex].wv_ncols) {
+			    case 1:
+				printf(" %10g", 
+				       wds_get_point(&wf->dv[sigindex].wds[0], j));
+				break;
+			    case 2:
+				printf(" (%g,%g) ", 
+				       wds_get_point(&wf->dv[sigindex].wds[0], j),
+				       wds_get_point(&wf->dv[sigindex].wds[1], j));
+				break;
+			    default:
+				fprintf(stderr,"bad number of columns\n");
+				exit(1);
+				break;
+			}
+			putchar('\n');
+		    }
+		}
+	} else {
+		printf("signal not found\n");
 	}
 
 	if(v_flag) {

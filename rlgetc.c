@@ -4,16 +4,20 @@
 #include <term.h>
 #include <readline/readline.h>
 #include <readline/history.h>  
+#include "post.h"
 
 #define MAXHIST 1024		/* max history lines to save */
-#define HISTORY ".posthist"
-#define POSTRC ".postrc"
+#define HISTORY ".posthist"	// basename of history file
+#define POSTRC ".postrc"	// where to get command line editor setup
+#define NHISTNAME 256		// maximum characters in history file name
 
 extern char *getwd();
 extern char *xmalloc();
 char * stripwhite();
 char *lineread = (char *) NULL;
 int pushback = '\0';
+
+char history_file[NHISTNAME];
 
 
 #include <signal.h>
@@ -98,7 +102,7 @@ char *prompt;
     /* If the line has any text in it, save it on the history. */
     if (lineread && *lineread) {
 	add_history (lineread);
-	write_history(HISTORY);
+	write_history(history_file);
     }
     
     /* add a newline to return string */
@@ -113,10 +117,26 @@ char *prompt;
 
 void rl_init()
 {
+    char tmp[NHISTNAME];
+
     /* Allow conditional parsing of the ~/.inputrc file. */
     rl_readline_name = POSTRC;
-    // stifle_history(MAXHIST);	/* maximum number of history lines */
-    read_history(HISTORY);
+
+    // prepare history file name unique to each design
+    if (rawfile_name() != NULL) {
+	strncpy(tmp, rawfile_name(), NHISTNAME);
+	tmp[strcspn(tmp, ".")] = '\0';	// strip ".raw" suffix
+	// printf("%s\n", tmp);
+    } else {
+	printf("couldn't get rawfile_name()\n");
+	exit(1);
+    }
+
+    // initialize history_file name with suffix unique to design name
+    snprintf(history_file, 2*NHISTNAME, "%s.%s", HISTORY, tmp);
+
+    // stifle_history(history_file);	/* maximum number of history lines */
+    read_history(history_file);
 }
 
 

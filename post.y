@@ -409,7 +409,6 @@ int main(int argc, char *argv[])    /* hoc 6 */
     extern int yydebug;
     yydebug = 0;
 
-    rl_init();	/* Bind our completer. */
 
     progname = argv[0];
     
@@ -455,6 +454,8 @@ int main(int argc, char *argv[])    /* hoc 6 */
     while (moreinput()) {
 	// if (fin==stdin) license();
 	if (fin==stdin && isatty(1) && isatty(0) ) license();
+
+	rl_init();	/* Bind our completer. */
 	run();
     }
     return 0;
