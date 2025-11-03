@@ -50,6 +50,13 @@ you can put them in file and load them at start up time with
 will load all listed files into memory. 
 The final "-" drops into interactive mode after loading
 everything. 
+.SS SPICE READLINE HISTORY
+.PP
+Spice saves all the commands that are typed at the interactive prompt into a file "~/.posthist.<circuitname>".  <circuitname> is the name of the raw file with ".raw" stripped off.  This command history is accessible using the readline commands appropriate to the vim or emacs editor settings in your .inputrc file.
+.PP
+Persistant command history helps make 
+.B Post
+self documenting.  If a deck is rerun at a later date, all the plotting commands suitable for perusing the raw file are saved in the history file for replotting.
 .SS SPICE RAWFILES
 .PP
 If you'd like 
@@ -534,6 +541,6 @@ as a multiplexer.
                         
 
 .SH AUTHOR
-Richard Walker
+Richard Walker, walker@omnisterra.com
 .SH LICENSE
 released under GPL v2.0
