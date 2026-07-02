@@ -44,7 +44,7 @@ int lookup(SPICEDAT *sp, char *varname);
 void dumpvar(SPICEDAT *sp, int nv);
 
 SPICEDAT *sptab[MAXTAB];		// table of analyses
-int ntab=0;			// number of analyses
+int ntab=0;				// number of analyses
 
 char *progname;
 

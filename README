@@ -65,7 +65,7 @@ used when the "-g" option is specified.
 
 Run post with "post [-g] [-r <rawfile>] [scriptfilenames...]".  
 
-You might try the included "run" script.  If given the basename of a
+You might try the included "ds" script.  If given the basename of a
 spice .cki file, it will check to see if a .raw file already exists that
 is newer than the .cki file.  If not, it will build it.   Then it will
 invoke post(1) on the .raw file.

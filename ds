@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# usage: run <deck>
+# usage: ds <deck>
 #
 # if <deck>.cki is newer than <deck>.raw, run spice,
 # if no SPICE errors, then run post on <deck>.raw

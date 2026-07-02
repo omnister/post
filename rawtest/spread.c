@@ -1,6 +1,6 @@
 // read in an ngspice rawfile
 // includes .ac/.tran/.dc analysis
-// 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -58,7 +58,7 @@ int read_header(int *nvars, int *npts, int *cflag) {
    return(err);
 }
 
-read_bin(int nvars, int npts, int cflag) {
+void read_bin(int nvars, int npts, int cflag) {
   int i,v,p;
   int total;
   double d;
@@ -102,7 +102,7 @@ read_bin(int nvars, int npts, int cflag) {
 
 // table[pts][var][0:1]
 
-main() {
+int main() {
    int i,x;
 
    int nvars, npts;

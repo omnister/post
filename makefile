@@ -10,7 +10,7 @@ HEADERS =  rlgetc.h datum.h script.h post.h y.tab.h  symbol.h \
 ss_intern.h ss_spice2.h ss_spicestream.h ss_wavefile.h
 DEMOS=scriptdemo
 TARS = HOWTO README COPYING makefile $(SRCS) $(DEMOS) $(HEADERS) $(EXTRAS) $(EXAMPLES)
-CCFLAGS = -ggdb -Wall
+CCFLAGS = -ggdb -Wall 
 
 all:	post sp
 

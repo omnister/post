@@ -81,7 +81,7 @@ main(int argc, char **argv)
 	}
 
 	if(errflg || optind >= argc)  {
-	    fprintf(stderr, "usage: %s [-ltvx] file\n", argv[0]);
+	    fprintf(stderr, "usage: %s [-ltvx] -n<signame> file\n", argv[0]);
 	    fprintf(stderr, "     [-i] ; information listing \n");
 	    fprintf(stderr, "     [-t <filetype>] ; override filetype autosense\n");
 	    fprintf(stderr, "     [-l] ; list all waveform values \n");
