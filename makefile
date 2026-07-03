@@ -70,10 +70,13 @@ com_ci.o: ss_wavefile.h
 com_ci.o: y.tab.h
 com_ls.o: post.h
 datum.o: post.h
+g.o: post.h
+g.o: script.h
 graph.o: post.h
 graph.o: script.h
 init.o: post.h
 init.o: y.tab.h
+rlgetc.o: post.h
 rlgetc.o: rlgetc.h
 script.o: script.h
 sp.o: ss_wavefile.h
