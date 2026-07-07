@@ -3,6 +3,7 @@
 typedef struct Symbol {     /* symbol table entry */
     char    *name;
     short   type;
+    int     simno;		    // simulation number
     union {
         DATUM   *val;       /* VAR */
         DATUM   *(*ptr)();   /* BLTIN */
@@ -12,5 +13,7 @@ typedef struct Symbol {     /* symbol table entry */
     struct Symbol   *next;  /* to link to another */
 } Symbol;
 
-Symbol  *install(), *lookup();
-void symprint();
+void symprint(void);
+Symbol *lookup(char *s, int simno);
+Symbol *install(char *s, int t, DATUM *d, int simno);
+

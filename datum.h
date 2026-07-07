@@ -13,14 +13,13 @@ typedef enum {ADD, AVG, DIV, MAX, MIN, MULT, MOD, POW, SUB, WARP, VERSUS, LAM} B
 void free_dat(DATUM *p); 
 void print_dat(DATUM *p);
 void plot_dat(DATUM *p, int mode);	/* mode, 0=graph same, 1=graph new */
-int  dat_stat();
-DATUM * new_dat();		/* alloc a temporary variable */
-DATUM * new_dat_perm();		/* alloc a permanent variable */
+int  dat_stat(void);
+DATUM * new_dat(double re, double im);			/* alloc a temporary variable */
+DATUM * new_dat_perm(double re, double im);		/* alloc a permanent variable */
 DATUM * dup_dat(DATUM *p);	/* copy a DATUM */
-DATUM * link_dat();
-DATUM * interp();
-
-DATUM * dopause();
+DATUM * link_dat(DATUM *head, DATUM *tail);
+DATUM * interp(DATUM *var, DATUM *pt);
+DATUM * dopause(DATUM *a, DATUM *b);
 
 /* binaries */
 

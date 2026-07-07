@@ -13,7 +13,7 @@
 
 extern char *getwd();
 extern char *xmalloc();
-char * stripwhite();
+// char *stripwhite();
 char *lineread = (char *) NULL;
 int pushback = '\0';
 
@@ -60,9 +60,7 @@ char * expdupstr(char * s,int n)
     return (r);
 }
 
-int rl_ungetc(c,fd) 
-int c;
-FILE *fd;
+int rl_ungetc(int c, FILE *fd) 
 {
     /* printf("ungetting %2.2x %c\n",c,c); */
 
@@ -76,8 +74,7 @@ FILE *fd;
 
 
 /* Read a string, and return a pointer to it.  Returns NULL on EOF. */
-char * rl_gets (prompt)
-char *prompt;
+char * rl_gets (char *prompt)
 {
 
     char *s;
@@ -115,7 +112,7 @@ char *prompt;
     return (lineread);
 }
 
-void rl_init()
+void rl_init(void)
 {
     char tmp[NHISTNAME];
 
@@ -143,8 +140,7 @@ void rl_init()
 /* note: "rl_getc" is an internal readline function... Do NOT rename */
 /* this function from "rlgetc" to "rl_getc" or all hell will break loose */
 
-int rlgetc(fd)
-FILE *fd;
+int rlgetc(FILE *fd)
 {
     int c;
     static char *lp = NULL;

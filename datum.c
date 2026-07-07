@@ -13,7 +13,7 @@ double xinterp(double tt, double x2, double y2, double x1, double y1);
 void emit(BINOP op, DATUM **result, double *tmax, DATUM *datuma, DATUM *datumb);
 DATUM *twovectors( BINOP op, DATUM *a, DATUM *b);
 
-int dat_stat() {			/* return number of malloc'd datums */
+int dat_stat(void) {			/* return number of malloc'd datums */
     return (mem_use);
 }
 
@@ -1324,7 +1324,7 @@ DATUM * dt(DATUM *a, DATUM *b) {
        return(NULL);
     }
 
-    s=lookup("DT");
+    s=lookup("DT",-1);
 
     dt = s->u.val->re;
 

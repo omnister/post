@@ -70,9 +70,10 @@ extern int yydebug;
     PR = 271,                      /* PR  */
     CI = 272,                      /* CI  */
     DI = 273,                      /* DI  */
-    QUIT = 274,                    /* QUIT  */
-    UNARYMINUS = 275,              /* UNARYMINUS  */
-    UNARYPLUS = 276                /* UNARYPLUS  */
+    SE = 274,                      /* SE  */
+    QUIT = 275,                    /* QUIT  */
+    UNARYMINUS = 276,              /* UNARYMINUS  */
+    UNARYPLUS = 277                /* UNARYPLUS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -97,9 +98,10 @@ extern int yydebug;
 #define PR 271
 #define CI 272
 #define DI 273
-#define QUIT 274
-#define UNARYMINUS 275
-#define UNARYPLUS 276
+#define SE 274
+#define QUIT 275
+#define UNARYMINUS 276
+#define UNARYPLUS 277
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -111,7 +113,7 @@ union YYSTYPE
     double  y_num;	/* a double precision number */
     Symbol *y_sym;	/* pointer to Symbol Table */
 
-#line 115 "y.tab.h"
+#line 117 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

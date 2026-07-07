@@ -78,7 +78,7 @@ void graphversus(DATUM *d) {
    } 
 }
 
-void graphlogx() {
+void graphlogx(void) {
    PLOTSPEC *p;
    p = &(plottab[num++]);
    p->logx = 1.0;

@@ -1,16 +1,17 @@
-YFLAGS = -vd
+#YFLAGS = -vd -Wcounterexamples
+YFLAGS = -vd 
 BIN = /usr/local/bin/
 MAN = /usr/local/man/man1/
 SPSRCS = ss_cazm.c ss_hspice.c ss_spice2.c ss_spice3.c ss_spicestream.c ss_stubs.c ss_wavefile.c
 SPOBJS = ss_cazm.o ss_hspice.o ss_spice2.o ss_spice3.o ss_spicestream.o ss_stubs.o ss_wavefile.o 
-SRCS = sp.c post.y rlgetc.c datum.c symbol.c init.c script.c com_ls.c com_ci.c graph.c license.c $(SPSRCS)
-OBJS = post.o rlgetc.o datum.o symbol.o init.o script.o com_ls.o com_ci.o graph.o license.o $(SPOBJS)
+SRCS = sp.c post.y rlgetc.c datum.c symbol.c init.c script.c com_ls.c com_se.c com_ci.c graph.c license.c $(SPSRCS)
+OBJS = post.o rlgetc.o datum.o symbol.o init.o script.o com_ls.o com_se.o com_ci.o graph.o license.o $(SPOBJS)
 EXAMPLES = aoi.W.tr0 nand.N.tr0 pd1.N.tr0 quickINV.tr0 quickTRAN.tr0
 HEADERS =  rlgetc.h datum.h script.h post.h y.tab.h  symbol.h \
 ss_intern.h ss_spice2.h ss_spicestream.h ss_wavefile.h
 DEMOS=scriptdemo
 TARS = HOWTO README COPYING makefile $(SRCS) $(DEMOS) $(HEADERS) $(EXTRAS) $(EXAMPLES)
-CCFLAGS = -ggdb -Wall 
+CCFLAGS = -ggdb -Wall -Wpedantic #-Wextra
 
 all:	post sp
 

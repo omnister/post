@@ -28,7 +28,7 @@ char *rawfile_name() {
     return(rawfilename);
 }
 
-char *independent_varname() {
+char *independent_varname() {	
     return(ivname);
 }
 
@@ -66,15 +66,15 @@ int com_ci(char *rawfile)
        printf("unrecognized wv_name in com_ci: %s\n", wf->iv->wv_name);
     }
     
-    for (i = 0; i < wf->wf_ndv; i++) {
+    for (i = 0; i < wf->wf_ndv; i++) {		// number of dep vars == nvars
 	result = NULL;
-        for (j = 0; j < wf->nvalues; j++) {
+        for (j = 0; j < wf->nvalues; j++) {	// npts
 	    switch (wf->dv[i].wv_ncols) {
-	    case 1:
+	    case 1:						// cflag=0
 		re=wds_get_point(&wf->dv[i].wds[0], j);
 		im=0.0;
 		break;
-	    case 2:
+	    case 2:						// cflag=1
 		re=wds_get_point(&wf->dv[i].wds[0], j);
 		im=wds_get_point(&wf->dv[i].wds[1], j);
 		break;
@@ -123,7 +123,7 @@ int com_ci(char *rawfile)
 	}
 	*t = '\0';
 
-	install(buf, VAR, result);
+	install(buf, VAR, result,0);
     }
 
     // create synthetic time variable
@@ -136,7 +136,7 @@ int com_ci(char *rawfile)
 	tmp->iv = re;
 	result = link_dat(result, tmp);
     }
-    install(wf->iv->wv_name, VAR, result);
+    install(wf->iv->wv_name, VAR, result,0);
 
 
     wf_free(wf);

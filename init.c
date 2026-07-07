@@ -17,6 +17,7 @@ static struct {
     {"gs",	GS},	/* graphsame */
     {"ci",      CI},	/* load in a rawfile */
     {"di",      DI},	/* display loaded sig names */
+    {"se",      SE},	/* list and select simulations */
     {"ls",      LS},	/* list loadable rawfiles in cwd */
     {"pr",      PR},	/* print variable */
     {"print",   PR},	/* print variable */
@@ -104,15 +105,15 @@ void init()	/* install constants and built-ins in table */
     Symbol *s;
     
     for (i=0; keywords[i].name; i++) {
-	install(keywords[i].name, keywords[i].kval, 0.0);
+	install(keywords[i].name, keywords[i].kval, new_dat(0.0,0.0) ,-1);
     }
 
     for (i=0; builtins[i].name; i++) {
-	s = install(builtins[i].name, BLTIN, NULL);
+	s = install(builtins[i].name, BLTIN, NULL,-1);
 	s->u.ptr = builtins[i].func;
     }
 
     for (i=0; consts[i].name; i++) {
-	install(consts[i].name, VAR, new_dat(consts[i].re, consts[i].im));
+	install(consts[i].name, VAR, new_dat(consts[i].re, consts[i].im),-1);
     }
 }

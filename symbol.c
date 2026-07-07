@@ -4,23 +4,27 @@
 #include "post.h"
 #include "y.tab.h"
 
-static Symbol *symlist = 0; /* symbol table: linked list */
+static Symbol *symlist = NULL; /* symbol table: linked list */
 
-Symbol *lookup(s)           /* find s in symbol table */
-char *s;
+// find s in table
+// return symbols with ((sp->simno == 0) || (sp->simno==simno))
+// this allows multiple sims to be installed into table
+
+Symbol *lookup(char *s, int simno)           /* find s in symbol table */
 {
     Symbol *sp;
 
-    for (sp=symlist; sp!=(Symbol *)0; sp=sp->next)
-        if (strcmp(sp->name, s)==0)
-            return sp;
-    return 0;               /* 0 ==> not found */
+    for (sp=symlist; sp!=(Symbol *)0; sp=sp->next) {
+        if (strcmp(sp->name, s)==0) {
+	    if ((sp->simno<0) || (sp->simno==simno) || (sp->simno==0)) {
+		return sp;
+	    }
+	}
+    }
+    return NULL;               // not found
 }
 
-Symbol *install(s,t,d)      /* install s in symbol table */
-char *s;
-int t;
-DATUM *d;
+Symbol *install(char *s, int t, DATUM *d, int simno)      /* install s in symbol table */
 {
     Symbol *sp;
     char *emalloc();
@@ -31,6 +35,7 @@ DATUM *d;
     sp->type = t;
     sp->u.val = d;
     sp->next = symlist; /* put at front of list */
+    sp->simno = simno;
     symlist = sp;
     return sp;
 }

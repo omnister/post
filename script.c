@@ -91,14 +91,15 @@ int scriptopen(char* prog, char *arg1, char *arg2, char *pmsg)
     return(1);	/* success */
 }
 
-void onalarm() 	/* kill child process on alarm */
+void onalarm(int x) 	/* kill child process on alarm */
 {
+    (void) x;
     fprintf(stderr, "child killed\n");
     kill(pid, SIGQUIT); 
     kill(pid, SIGKILL); 
 }
 
-int scriptclose() {
+int scriptclose(void) {
     /* return(0); */
     close(sendfd);	        /* send EOF */
     sendfp = NULL;

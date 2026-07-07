@@ -37,6 +37,7 @@ int comment(void);
 %token <y_sym>   PR
 %token <y_sym>   CI
 %token <y_sym>   DI 
+%token <y_sym>   SE 
 %token <y_sym>   QUIT 
 %type  <y_datum> expr
 %type  <y_datum> asgn
@@ -69,6 +70,8 @@ list:	/* empty */
 	    }
 	| list gs eos {
 	    }
+	| list se eos {
+	    }
 	| list LS eos {
 		ls();
 	    }
@@ -90,6 +93,13 @@ list:	/* empty */
 	;
 
 /****************************************/
+
+se:          SE { 
+		se(0);
+		    };
+	     | SE NUMBER {
+		se($2);
+	     };
 
 gr: 	     GR {graphinit();} plotlist { 
 		if (!gnuplot) {
@@ -324,9 +334,12 @@ coord_list: coord ';' coord {
 	    }
 	;
 
-eos:    /* EMPTY */
-	| '\n'
+eos:    '\n'
         ;
+
+//eos:    /* EMPTY */
+//	| '\n'
+//       ;
 %%
 
 #define _GNU_SOURCE
@@ -486,8 +499,7 @@ int moreinput()
     return 1;
 }
 
-void execerror(s,t)	/* recover from run-time error */
-char *s, *t;
+void execerror(char *s,char *t)	/* recover from run-time error */
 {
     void warning();
     warning(s,t);
@@ -613,8 +625,8 @@ int yylex()
 	rl_ungetc(c,fin);
 	*p = '\0';
 
-	if ((s=lookup(sbuf)) == 0) {
-	    s = install(sbuf, UNDEF, new_dat(0.0, 0.0));
+	if ((s=lookup(sbuf,-1)) == NULL) {
+	    s = install(sbuf, UNDEF, new_dat(0.0, 0.0),0);
 	}
 
 	yylval.y_sym=s;
@@ -640,7 +652,7 @@ int yylex()
 	    *p = backslash(c);
 	}
 	*p = 0;
-	if ((s=lookup(sbuf)) == 0) {
+	if ((s=lookup(sbuf,-1)) == NULL) {
 	    yylval.y_sym = (Symbol *)emalloc(strlen(sbuf)+1);
 	    strcpy((char *) yylval.y_sym, sbuf);
 	    rval = STRING;
