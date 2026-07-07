@@ -22,8 +22,8 @@ extern  void execerror(char *s, char *t);
 extern  int ls(void);
 extern  int com_ci(char *file);
 extern  int se(int simno);
-extern  char *rawfile_name();
-extern  char *independent_varname();
+extern  const char *rawfile_name();
+extern  const char *independent_varname();
 
 extern  void initcode(void);
 extern  void init(void);

@@ -1,11 +1,11 @@
 
-typedef struct complex {
+typedef struct datum {
     double iv; 		/* independent variable for list of data points */
     double re; 		/* real part of complex value */
     double im; 		/* imag part of complex value */
     char *def;		/* textual equivalent */
-    struct complex *next;
-    struct complex *prev;
+    struct datum *next;
+    struct datum *prev;
 } DATUM;
 
 typedef enum {ADD, AVG, DIV, MAX, MIN, MULT, MOD, POW, SUB, WARP, VERSUS, LAM} BINOP;

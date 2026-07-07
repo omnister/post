@@ -123,7 +123,7 @@ void graphprint_pd(int mode) {		/* pdplot */
     int npts=0;
     double max,min,range, scale;
     char name[128];
-    char *pn;
+    const char *pn;
     double x1, y1, x2, y2;
     char *pmsg=NULL;
 
@@ -266,7 +266,7 @@ void graphprint_gnu(int mode) {		/* gnuplot */
     int i;
     char buf[128];
     time_t plottime;
-    char *pn;
+    const char *pn;
     double ngraphs;
     char *pmsg=NULL;
 

@@ -24,11 +24,11 @@ char ivname[128]="";
 
 static char *rawfilename = NULL;
 
-char *rawfile_name() {
+const char *rawfile_name() {
     return(rawfilename);
 }
 
-char *independent_varname() {	
+const char *independent_varname() {	
     return(ivname);
 }
 
