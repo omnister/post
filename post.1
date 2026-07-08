@@ -68,15 +68,27 @@ command line option.
 .PP
 If you don't give the rawfile name at startup, you can get a list of
 loadable spice raw files by typing "ls" at the command
-prompt.  You can then load your selected rawfile at the
+prompt.  You can then one or more rawfiles at the
 prompt by typing
 .DS
-
-        : ci "<rawfile.raw>" # The filename must be in quotes.  
+    : ci "file.raw" 
 .DE
 .PP    
-The waveforms in the rawfile are loaded into a symbol table as
-PWL variables.  
+The filename must be in quotes.  The waveforms in the rawfile are 
+loaded into a symbol table as PWL variables.  The most recently loaded rawfile
+is set to be active and the simulated waveforms are available for plotting.
+.PP
+A list of the all the loaded rawfiles can be printed by typing
+.DS
+    : se
+.DE
+.PP
+The active rawfile will be tagged with a ">" character.  Typing
+.DS
+    : se <n>
+.DE
+.PP
+will switch the active raw file to the nth one that was loaded.
 .B Post 
 massages the 
 .B SPICE 
@@ -166,7 +178,8 @@ logarithmic y scale.
 .PP
 .SH COMMANDS:
 
-gr gs ci di  ls pr print quit exit bye
+
+gr gs ci di se ls pr print quit exit bye
 
 .SH NUMBERS
 Numbers can be real or complex. All numbers are cast to double precision. 
@@ -475,7 +488,10 @@ as a multiplexer.
     ls                  ; list all raw files in the current directory
     ci "file.raw"       ; load the raw file "file". Quotes are required
     di                  ; display the names of all loaded variables
+    se			; show all loaded files with active file marked by ">"
+    se <n>		; change the active file to the nth one loaded
 .DE
+
 
 .TP
 .SS SQUARE ROOT

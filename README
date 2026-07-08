@@ -68,7 +68,33 @@ Run post with "post [-g] [-r <rawfile>] [scriptfilenames...]".
 You might try the included "ds" script.  If given the basename of a
 spice .cki file, it will check to see if a .raw file already exists that
 is newer than the .cki file.  If not, it will build it.   Then it will
-invoke post(1) on the .raw file.
+invoke post(1) on the .raw file with the -r option.
+
+If no rawfile is specified with the -r option, then a rawfile can 
+be loaded from inside post using the command
+
+    :ci "foo.raw"
+
+The rawfile must be quoted.  A list of rawfiles in the current working
+directory can be printed with the command "ls".
+
+Multiple rawfiles can be loaded simultaneously.  The most recently loaded
+file is set to be the active one by default.  A list of all loaded rawfiles
+can be shown with the the "se" command:
+
+    :se
+          0  # a0.raw - Transient Analysis
+             # title: test 0
+        > 1  # a1.raw - Transient Analysis
+             # title: test 1
+
+If "se" is typed with no arguments it will give a list of loaded files with 
+the currently active file denoted by the ">" character.  If the se command
+is given a number, the currently active rawfile is switched to the number given.
+
+You can list the loaded variables with "di".  In addition to dependant
+variables from the SPICE deck, there will be a synthetic time variable
+that can be used for making calculations as a function of the time axis. 
 
 Post(1) will start up interactively if given no arguments.  You'll get a
 ":" prompt in your terminal window.  If you want Post to simply run a
@@ -91,18 +117,6 @@ If you have written some nice waveform definitions for post you can put
 them in file and load them at start up time with "post mydefs -".  Post
 will load all listed files into memory.  The final "-" drops you into
 interactive mode after loading everything. 
-
-Of course, the most important feature is loading spice raw files.
-You can get a list of loadable spice raw files with "ls".
-
-You can load a rawfile with 
-
-	: ci "file"
-
-The filename must be in quotes.  You can list the loaded variables
-with "di".  In addition to dependant variables from the SPICE deck,
-there will be a synthetic time variable that can be used for making
-calculations as a function of the time axis.
 
 Post ignores anything from a "#" character to the end of the line.
 
