@@ -73,10 +73,9 @@ invoke post(1) on the .raw file with the -r option.
 If no rawfile is specified with the -r option, then a rawfile can 
 be loaded from inside post using the command
 
-    :ci "foo.raw"
+    :ci foo.raw
 
-The rawfile must be quoted.  A list of rawfiles in the current working
-directory can be printed with the command "ls".
+A list of rawfiles in the current working directory can be printed with the command "ls".
 
 Multiple rawfiles can be loaded simultaneously.  The most recently loaded
 file is set to be the active one by default.  A list of all loaded rawfiles
