@@ -3,6 +3,7 @@
 
 #include "post.h"
 #include "y.tab.h"
+#include "newread.h"
 
 static Symbol *symlist = NULL; /* symbol table: linked list */
 
@@ -16,7 +17,7 @@ Symbol *lookup(char *s, int simno)           /* find s in symbol table */
 
     for (sp=symlist; sp!=(Symbol *)0; sp=sp->next) {
         if (strcmp(sp->name, s)==0) {
-	    if ((sp->simno<0) || (sp->simno==simno) || (sp->simno==0)) {
+	    if ((sp->simno<0) || (sp->simno==simno)) {
 		return sp;
 	    }
 	}
@@ -48,7 +49,7 @@ void symprint()
 
     printf("\t");
     for (sp=symlist; sp!=(Symbol *)0; sp=sp->next) {
-        if (sp->type == VAR) {
+        if (sp->type == VAR && ((sp->simno<0) || sp->simno==cur_simno())) {
 	    len=strlen(sp->name);
 	    if ((lw+len+1) > 65) {
 	       printf("\n\t");

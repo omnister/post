@@ -1,4 +1,7 @@
+#pragma once
+
 #include <string.h>
+#include "datum.h"
 
 typedef struct Symbol {     /* symbol table entry */
     char    *name;

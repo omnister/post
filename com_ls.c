@@ -31,7 +31,7 @@ int ls() {
     	perror("scandir");
     } else {
         for(i=0; i<n; i++) {
-	    printf("%s\n", namelist[i]->d_name);
+	    printf("\t%s\n", namelist[i]->d_name);
 	    free(namelist[i]);
 	}
 	free(namelist);

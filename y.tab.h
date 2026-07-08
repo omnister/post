@@ -107,7 +107,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 21 "post.y"
+#line 23 "post.y"
 
     DATUM  *y_datum;	/* pointer to a complex number type */
     double  y_num;	/* a double precision number */

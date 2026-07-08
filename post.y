@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include "post.h"
 #include "script.h"
+#include "newread.h"
+
 #define YYDEBUG 1
 
 char buf[128];
@@ -75,8 +77,14 @@ list:	/* empty */
 	| list LS eos {
 		ls();
 	    }
+	| list CI eos {
+		printf("\tci command needs a quoted rawfile name\n");
+	    }
+	| list CI VAR eos {
+		printf("\tci command needs a quoted rawfile name\n");
+	    }
 	| list CI STRING eos {
-		if (!bflag) printf("loading %s\n", (char *) $3);
+		if (!bflag) printf("\tloading %s\n", (char *) $3);
 		com_ci((char *) $3);
 	    }
 	| list QUIT eos {
@@ -95,7 +103,7 @@ list:	/* empty */
 /****************************************/
 
 se:          SE { 
-		se(0);
+		se(-1);
 		    };
 	     | SE NUMBER {
 		se($2);
@@ -625,8 +633,8 @@ int yylex()
 	rl_ungetc(c,fin);
 	*p = '\0';
 
-	if ((s=lookup(sbuf,-1)) == NULL) {
-	    s = install(sbuf, UNDEF, new_dat(0.0, 0.0),0);
+	if ((s=lookup(sbuf,cur_simno())) == NULL) {	// found PWL
+	    s = install(sbuf, UNDEF, new_dat(0.0, 0.0),cur_simno());	// make a new one
 	}
 
 	yylval.y_sym=s;

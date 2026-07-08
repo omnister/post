@@ -561,6 +561,8 @@ SPICEDAT *sp_read(char *filename)
 
 	    read_bin(sp, fp);
 	    load_symbol(sp);	// put in symbol table 
+	    plotnum = ntab;	// set current sim to new one
+
 
 	    if (ntab < MAXTAB - 2) {
 		ntab++;

@@ -1,4 +1,3 @@
-#include "datum.h"
 #include "symbol.h"
 #include <math.h>
 
@@ -45,3 +44,4 @@ int     rlgetc();
 int     rl_ungetc();
 int     moreinput();
 
+int com_ci(char *rawfile);

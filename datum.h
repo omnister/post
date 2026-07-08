@@ -1,3 +1,4 @@
+#pragma once
 
 typedef struct datum {
     double iv; 		/* independent variable for list of data points */

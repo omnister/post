@@ -16,129 +16,13 @@
 #include <unistd.h> 	/* for getopt() */
 #include <stdlib.h>	/* for exit() */
 
-#include "ss_wavefile.h"
+// #include "ss_wavefile.h"
 #include "post.h"
 #include "y.tab.h"
-
-char ivname[128]="";
-
-static char *rawfilename = NULL;
-
-const char *rawfile_name() {
-    return(rawfilename);
-}
-
-const char *independent_varname() {	
-    return(ivname);
-}
+#include "newread.h"
 
 int com_ci(char *rawfile)
 {
-    WaveFile *wf;
-    int i, j;
-    char *filetype = NULL;
-    char buf[128];
-    char *t,*s;
-    int c;
-    double re, im,  iv;
-    double re1,im1, iv1;
-    double re2,im2, iv2;
-
-    DATUM *tmp;
-    DATUM *result;
-
-    spicestream_msg_level = ERR;
-    wf = wf_read(rawfile, filetype);
-    if (!wf) {
-	fprintf(stderr, "com_ci: unable to read file\n");
-	return(0);
-    }
-
-    if (rawfilename != NULL) { free(rawfilename); } 
-    rawfilename = strsave(rawfile);
-
-    if (strncasecmp(wf->iv->wv_name,"frequency", 9)==0) {
-       strcpy(ivname,"frequency");
-    } else if (strncasecmp(wf->iv->wv_name,"time", 4)==0) {
-       strcpy(ivname,"seconds");
-    } else {
-       strcpy(ivname,wf->iv->wv_name);
-       printf("unrecognized wv_name in com_ci: %s\n", wf->iv->wv_name);
-    }
-    
-    for (i = 0; i < wf->wf_ndv; i++) {		// number of dep vars == nvars
-	result = NULL;
-        for (j = 0; j < wf->nvalues; j++) {	// npts
-	    switch (wf->dv[i].wv_ncols) {
-	    case 1:						// cflag=0
-		re=wds_get_point(&wf->dv[i].wds[0], j);
-		im=0.0;
-		break;
-	    case 2:						// cflag=1
-		re=wds_get_point(&wf->dv[i].wds[0], j);
-		im=wds_get_point(&wf->dv[i].wds[1], j);
-		break;
-	    default:
-		fprintf(stderr, "bad number of columns\n");
-		exit(1);
-		break;
-	    }
-	    iv = wds_get_point(wf->iv->wds, j);
-
-	    if (j<2) {
-		tmp=new_dat(re,im);
-		tmp->iv = iv;
-		result = link_dat(result, tmp);
-
-	    } else if (j>2 && (!collinear(iv2,re2, iv1,re1, iv,re) || !collinear(iv2,im2, iv1,im1, iv,im))) { 
-
-		tmp=new_dat(re1,im1);
-		tmp->iv = iv1;
-		result = link_dat(result, tmp);
-
-	    }
-	    iv2 = iv1; iv1 = iv;
-	    re2 = re1; re1 = re;
-	    im2 = im1; im1 = im;
-	}
-	tmp=new_dat(re1,im1);
-	tmp->iv = iv1;
-	result = link_dat(result, tmp);
-
-	s=wf->dv[i].wv_name;
-	t=buf;
-	while (*s!='\0') {
-	    switch (c=*s++){
-		case  ')':
-		case  '(':
-		case  '#':
-		    break;
-		case  '%':
-		   *t++ = '_';
-		    break;
-		default:
-		   *t++ = c;
-		   break;
-	    }
-	}
-	*t = '\0';
-
-	install(buf, VAR, result,0);
-    }
-
-    // create synthetic time variable
-    
-    result = NULL;
-    for (j = 0; j < wf->nvalues; j++) {
-	re = wds_get_point(wf->iv->wds, j);
-	im = 0.0;
-	tmp=new_dat(re,im);
-	tmp->iv = re;
-	result = link_dat(result, tmp);
-    }
-    install(wf->iv->wv_name, VAR, result,0);
-
-
-    wf_free(wf);
+    sp_read(rawfile);
     return(0);
 }
