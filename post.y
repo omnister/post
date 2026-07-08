@@ -81,10 +81,9 @@ list:	/* empty */
 		printf("\tci command needs a quoted rawfile name\n");
 	    }
 	| list CI VAR eos {
-		printf("\tci command needs a quoted rawfile name\n");
+		com_ci((char *) $3->name);
 	    }
 	| list CI STRING eos {
-		if (!bflag) printf("\tloading %s\n", (char *) $3);
 		com_ci((char *) $3);
 	    }
 	| list QUIT eos {
