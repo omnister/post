@@ -1,0 +1,63 @@
+This is a set of verbs for doing simple math with PWL files.   It is
+essentially the same algorithm used inside Post for PWL arithmetic.
+
+The algorithm for cross-interpolating the files is interesting.  If the
+PWL files are defined at different independent variable (iv) times, the
+programs perform a cross interpolation of both files such that the
+output wavefrom is defined at all iv points of either file.  The
+algorithm decides which file to pull the next data point from based on a
+state maching that compares last two points read from each file. 
+
+sig.a and sig.b are two test PWL files.
+
+You can plot them with 
+	
+	cat sig.a sig.b | pd
+
+You can add the average of the two files to the plot with:
+
+	add sig.a sig.b | pd  -n
+
+similarly:
+
+	sub sig.a sig.b  | pd  -n	; sig.b subtracted from sig.a
+	min sig.a sig.b  | pd  -n	; minimum of the two sigs
+	max sig.a sig.b  | pd  -n	; maximum of the two sigs
+	avg sig.a sig.b  | pd  -n	; average of the two sigs
+	mult sig.a sig.b | pd  -n	; the two sigs multiplied
+	div sig.a sig.b  | pd  -n	; sig.a divided by sig.b
+
+There are also a few scripts for querying a PWL
+
+	 xcross [options] < file ; print both rising and falling zero crossings
+         xcrossp [options] < file ; print only rising zero crossings
+	 xcrossn [options] < file ; print only falling zero crossings
+	    -n <N> ; only print the nth crossing (default=ALL)
+	    -v <volts> ; set crossing voltage (default=0)
+	    -h ; print this usage message
+
+         yvalue [options] < file # print the y value of the waveform at given time
+            -t <time> # specify the sample time
+            -h #print this usage message
+
+And a few other scripts to modify PWL in various ways
+
+	lam "PWL1" "PWL2" ; output three columns with common time scale
+
+        delay [options] < file ; create a time-delayed pwl file
+	  -t time ; set time delay (0=default)
+	  -h ; print this usage message
+
+	eye [options] < PWL ; munge time axis to provide an eye-diagram scope display
+	  -u <time> ; set UI time (1)
+	  -w <width> ; scan width in UI (3)
+	  -h ; print this usage message
+
+	scope [options] < PWL ; munge time axis to provide a triggered scope display\n
+	  -t [0,1,-1] ; set trigger mode (1=rising, -1=falling, 0=both ($MODE)\n
+	  -u <time>  ; set UI time ($UI)\n
+	  -v <volts> ; set crossing voltage ($VOLTAGE)\n
+	  -w <width> ; scan width in UI ($WIDTH)\n
+	  -h         ; print this usage message\n"
+
+	warp "PWL1" "PWL2" ; at each point in time, warp PWL1 time axis by the value of PWL2
