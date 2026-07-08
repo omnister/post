@@ -28,9 +28,7 @@ void license() {
     printf("    PD_Post: a SPICE post-processor/calculator for\n");
     printf("    viewing and measuring piece-wise-linear waveforms.\n");
     printf("\n");
-    printf("    Copyright (C) 2006-2018  by Richard C. Walker.\n");
-    printf("    Copyright (C) 1998-2002  Stephen G. Tell.\n");
-    printf("    Copyright 1998 D. Jeff Dionne.\n");
+    printf("    Copyright (C) 2006-2026  by Richard C. Walker.\n");
     printf("\n");
     printf("    Author's email: walker AT omnisterra DOT com\n");
     printf("    Homepage: http://www.omnisterra.com/walker/linux/\n");
