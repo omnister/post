@@ -398,8 +398,10 @@ as a multiplexer.
 # SPICE RAW FILES
 
     ls			; list all raw files in the current directory
-    ci "file.raw"	; load the raw file "file". Quotes are required
+    ci file.raw		; load the raw file "file". 
     di			; display the names of all loaded variables
+    se 			; list all loaded analyses
+    se <n>		; selected the nth loaded analysis
 
 # SQUARE ROOT
     p2=sqrt(p1)		; same as pow(p,0.5)

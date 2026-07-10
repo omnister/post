@@ -223,6 +223,7 @@ expr:	NUMBER {
 		stringupdate($$, strsave(buf));
 	    } 
 	| '{' eos coord_list '}' { $$ = $3; }
+	| '{' eos coord_list ';' '}' { $$ = $3; }
 	| I             { $$ = new_dat(0.0, 1.0); };
 	| VAR { 
 		if ($1->type == UNDEF) {
@@ -341,12 +342,12 @@ coord_list: coord ';' coord {
 	    }
 	;
 
-eos:    '\n'
-        ;
+//eos:    '\n'
+//        ;
 
-//eos:    /* EMPTY */
-//	| '\n'
-//       ;
+eos:    /* EMPTY */
+	| '\n'
+       ;
 %%
 
 #define _GNU_SOURCE
@@ -432,7 +433,7 @@ int main(int argc, char *argv[])    /* hoc 6 */
 
     progname = argv[0];
     
-    while ((opt=getopt(argc, argv, "gr:")) != -1) {
+    while ((opt=getopt(argc, argv, "gr:?")) != -1) {
         switch (opt) {
 	case 'g':
 	   gnuplot++;
@@ -440,7 +441,8 @@ int main(int argc, char *argv[])    /* hoc 6 */
 	case 'r':
 	   com_ci(optarg); // open rawfile 
 	   break;
-	default:	/* '?' */
+	case '?':	/* '?' */
+	default:
 	   fprintf(stderr, "usage: %s [-g (use gnuplot)] [-r <rawfile>] <script>\n", argv[0]);
 	   exit(1);
 	}

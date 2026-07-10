@@ -1,6 +1,6 @@
 
 /* you can include this file, and then drop into */
-/* command line mode by running "post foo -" */
+/* command line mode by running "post scriptdemo -" */
 
 b={1,0;2,3;3,0;4,-1;5,8}	/* define b */
 
