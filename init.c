@@ -16,6 +16,7 @@ static struct {
     {"gr",	GR},	/* graphnew */
     {"gs",	GS},	/* graphsame */
     {"ci",      CI},	/* load in a rawfile */
+    {"vi",      VI},	/* edit a cki file */
     {"di",      DI},	/* display loaded sig names */
     {"se",      SE},	/* list and select simulations */
     {"ls",      LS},	/* list loadable rawfiles in cwd */

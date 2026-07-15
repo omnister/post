@@ -39,6 +39,7 @@ int comment(void);
 %token <y_sym>   PR
 %token <y_sym>   CI
 %token <y_sym>   DI 
+%token <y_sym>   VI 
 %token <y_sym>   SE 
 %token <y_sym>   QUIT 
 %type  <y_datum> expr
@@ -85,6 +86,9 @@ list:	/* empty */
 	    }
 	| list CI STRING eos {
 		com_ci((char *) $3);
+	    }
+	| list VI eos {
+		com_vi("xxx\n");
 	    }
 	| list QUIT eos {
 		exit(1);

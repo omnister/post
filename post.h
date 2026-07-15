@@ -20,6 +20,7 @@ extern  void define(Symbol* sp);
 extern  void execerror(char *s, char *t);
 extern  int ls(void);
 extern  int com_ci(char *file);
+extern  int com_vi(char *arg);
 extern  int se(int simno);
 extern  const char *rawfile_name();
 extern  const char *independent_varname();
