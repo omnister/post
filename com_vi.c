@@ -17,7 +17,7 @@ int com_vi(char *arg)
 {
     char cmd[200];
     char raw[80];	// "foo.raw"
-    char name[100];	// "foo"
+    char name[50];	// "foo"
     char cki[120];	// "foo.cki"
     struct stat sb;
     int before;
@@ -57,7 +57,7 @@ int com_vi(char *arg)
 	system(cmd);
 
 	// POST="post -r $DECK.raw"
-	char *args[]={"post", "-r", rawfile_name(), NULL};
+	char *args[]={"post", "-r", (char *) rawfile_name(), NULL};
 	execvp("post", args);
 
     }

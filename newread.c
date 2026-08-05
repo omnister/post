@@ -169,7 +169,7 @@ int test_main(int argc, char **argv) {
    exit(1);
 }
 
-SPICEDAT *newspicedat() {
+SPICEDAT *newspicedat(void) {
     SPICEDAT *sp;
     sp = (SPICEDAT*) malloc(sizeof(SPICEDAT));
     sp->title = NULL;
@@ -179,8 +179,8 @@ SPICEDAT *newspicedat() {
     sp->binary = 0;
     sp->nvars = 0;
     sp->npts = 0;
-    char **varname=NULL;
-    double *data = NULL;
+    sp->varname=NULL;
+    sp->data = NULL;
     return sp;
 }
 
