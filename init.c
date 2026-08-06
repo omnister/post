@@ -20,6 +20,7 @@ static struct {
     {"di",      DI},	/* display loaded sig names */
     {"se",      SE},	/* list and select simulations */
     {"ls",      LS},	/* list loadable rawfiles in cwd */
+    {"pause",   PA},	/* pause for input */
     {"pr",      PR},	/* print variable */
     {"print",   PR},	/* print variable */
     {"xl",      XL},	/* xlimit */
@@ -85,7 +86,7 @@ static struct {	    /* built-ins */
     {"mod", 	   Mod},	/* binop */
     {"min", 	   Min},	/* binop */
     {"max", 	   Max},	/* binop */
-    {"pause", 	   dopause},	
+//    {"pause", 	   dopause},	
     {"pow", 	   Pow},	/* binop */
     {"sin", 	   Sin},	
     {"sqrt", 	   Sqrt},	/* binop */

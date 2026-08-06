@@ -41,6 +41,7 @@ int comment(void);
 %token <y_sym>   DI 
 %token <y_sym>   VI 
 %token <y_sym>   SE 
+%token <y_sym>   PA 
 %token <y_sym>   QUIT 
 %type  <y_datum> expr
 %type  <y_datum> asgn
@@ -72,6 +73,8 @@ list:	/* empty */
 	| list gr eos {
 	    }
 	| list gs eos {
+	    }
+	| list pa eos {
 	    }
 	| list se eos {
 	    }
@@ -110,6 +113,13 @@ se:          SE {
 		    };
 	     | SE NUMBER {
 		se($2);
+	     };
+
+pa:	     PA NUMBER {
+		DATUM *pp;
+		pp = new_dat($2, 0.0);
+		dopause(pp,NULL);
+		free_dat(pp);
 	     };
 
 gr: 	     GR {graphinit();} plotlist { 

@@ -1364,6 +1364,8 @@ DATUM * dopause(DATUM *a, DATUM *b) {		/* ansi already has a pause() command */
        return(NULL);
     }
 
+    printf("got %g\n", a->re);
+
     return(new_dat((double) sleep((int) a->re) ,0.0));
 }
 
