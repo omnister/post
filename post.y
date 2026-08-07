@@ -154,6 +154,10 @@ plotspec:  expr {
 	   	graphexpr($3);
 		free_dat($3);
 	      };
+   	   | plotspec  expr {
+	   	graphexpr($2);
+		free_dat($2);
+	      };
    	   | plotspec xl;
 	   | plotspec yl;
 	   | plotspec lx;

@@ -120,6 +120,7 @@ void graphprint_pd(int mode) {		/* pdplot */
     char buf[1024];
     time_t plottime;
     int count=0;
+    int nvar=0;
     int npts=0;
     double max,min,range, scale;
     char name[128];
@@ -155,64 +156,9 @@ void graphprint_pd(int mode) {		/* pdplot */
 
     scriptfeed(title);		/* emit title */
 
-    count=0;			// max/min for all waveforms
-    for (i=0; i<num; i++) {
-	p = &(plottab[i]);
-	if (p->datum != NULL) {
-	    if (count == 0) {
-		max=min=p->datum->iv;
-	    }
-	    count++;
-	    for (pd=p->datum; pd!=NULL; pd=pd->next) {
-		if (max<pd->iv) max=pd->iv;
-		if (min>pd->iv) min=pd->iv;
-	    }
-	}
-    }
-
-    if (max-min != 0.0) {
-	range = log(max-min)/log(10.0);
-    	if (range < -12) {
-	   scale = 1e-15;
-	   strcpy(name, "femto");
-	} else if (range < -9.0) {
-	   scale = 1e-12;
-	   strcpy(name, "pico");
-	} else if (range < -6.0) {
-	   scale = 1e-9;
-	   strcpy(name, "nano");
-	} else if (range < -3.0) {
-	   scale = 1e-6;
-	   strcpy(name, "micro");
-	} else if (range < 0) {
-	   scale = 1e-3;
-	   strcpy(name, "milli");
-	} else if (range < 3.0) {
-	   scale = 1.0;
-	   strcpy(name, "");
-	} else if (range < 6.0) {
-	   scale = 1e3;
-	   strcpy(name, "kilo");
-	} else if (range < 9.0) {
-	   scale = 1e6;
-	   strcpy(name, "mega");
-	} else if (range < 12.0) {
-	   scale = 1e9;
-	   strcpy(name, "giga");
-	} else if (range < 15.0) {
-	   scale = 1e12;
-	   strcpy(name, "tera");
-	} else {
-	   scale = 1.0;
-	   strcpy(name, "");
-	} 
-
-	sprintf(buf, "xscale %g %s%s\n", scale, name, independent_varname());
-	/* printf("%s: range:%g, max/min=%g/%g\n", buf, range, max,min); */
-	scriptfeed(buf);
-    }
-
     count=0;
+    nvar=0;
+
     for (i=0; i<num; i++) {
 	p = &(plottab[i]);
 	if (p->xlmin != p->xlmax) {
@@ -240,7 +186,15 @@ void graphprint_pd(int mode) {		/* pdplot */
 
 	if (p->datum != NULL) {	// regular plotting  (fully functional)
 	    count++;
+	    if (nvar == 0) {
+		max=min=p->datum->iv;
+	    }
+	    nvar++;
 	    for (pd=p->datum; pd!=NULL; pd=pd->next) {
+
+		if (max<pd->iv) max=pd->iv;	// compute max/min
+		if (min>pd->iv) min=pd->iv;
+
 		if (npts < 2) {
 		    sprintf(buf, "%g %g\n", pd->iv, pd->re);
 		    scriptfeed(buf);
@@ -255,6 +209,48 @@ void graphprint_pd(int mode) {		/* pdplot */
 	    sprintf(buf, "%g %g\n", x1, y1);
 	    scriptfeed(buf);
 	    sprintf(buf, "label -12%% %d%% %s\n", (int) (100.0-count*10.0), p->datum->def);
+	    scriptfeed(buf);
+	}
+
+	if (max-min != 0.0) {
+	    range = log(max-min)/log(10.0);
+	    if (range < -12) {
+	       scale = 1e-15;
+	       strcpy(name, "femto");
+	    } else if (range < -9.0) {
+	       scale = 1e-12;
+	       strcpy(name, "pico");
+	    } else if (range < -6.0) {
+	       scale = 1e-9;
+	       strcpy(name, "nano");
+	    } else if (range < -3.0) {
+	       scale = 1e-6;
+	       strcpy(name, "micro");
+	    } else if (range < 0) {
+	       scale = 1e-3;
+	       strcpy(name, "milli");
+	    } else if (range < 3.0) {
+	       scale = 1.0;
+	       strcpy(name, "");
+	    } else if (range < 6.0) {
+	       scale = 1e3;
+	       strcpy(name, "kilo");
+	    } else if (range < 9.0) {
+	       scale = 1e6;
+	       strcpy(name, "mega");
+	    } else if (range < 12.0) {
+	       scale = 1e9;
+	       strcpy(name, "giga");
+	    } else if (range < 15.0) {
+	       scale = 1e12;
+	       strcpy(name, "tera");
+	    } else {
+	       scale = 1.0;
+	       strcpy(name, "");
+	    } 
+
+	    sprintf(buf, "xscale %g %s%s\n", scale, name, independent_varname());
+	    // printf("%s: range:%g, max/min=%g/%g\n", buf, range, max,min); 
 	    scriptfeed(buf);
 	}
     }
