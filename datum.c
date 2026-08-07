@@ -149,21 +149,21 @@ void print_dat(DATUM *p) {		/* format and print a datum */
    } else if (p->next != NULL) {
        printf("\t{\n"); 
        for (pd=p; pd!=NULL; pd=pd->next) {
-       	   printf("\t    %.12g,", pd->iv);
-	   if (pd->im == 0.0) {
-		printf("%.12g;\n",  pd->re); 		/* 8+0i prints as "8" */
+       	   printf("\t    %.12f,", pd->iv);
+	   if (pd->im <= 1e-20) {
+		printf("%.12f;\n",  pd->re); 		/* 8+0i prints as "8" */
 	   } else {
 		if (pd->re == 0.0) {
 		    if (pd->im == 1.0) {
 			printf("i;\n"); 		/* 1i => "i" */
 		    } else {
-			printf("%.12gi;\n", pd->im); 	/* 2i => "2i" */
+			printf("%.12fi;\n", pd->im); 	/* 2i => "2i" */
 		    }
 		} else {
 		    if (pd->im == 1.0) {
-			printf("%.12g+i;\n", pd->re); 	/* 8+1i => "8+i" */
+			printf("%.12f+i;\n", pd->re); 	/* 8+1i => "8+i" */
 		    } else {
-			printf("%.12g%+.12gi;\n", pd->re, pd->im); /* 8+2i => "8+2i */
+			printf("%.12f%+.12fi;\n", pd->re, pd->im); /* 8+2i => "8+2i */
 		    }
 		}
 	   }

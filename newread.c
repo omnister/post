@@ -422,8 +422,7 @@ SPICEDAT *read_header(FILE *fp)
 		err++;
 	    }
 	    sp->nvars = nvars;
-	    if (debug)
-		printf("NVAR: %d\n", sp->nvars);
+	    if (debug) printf("NVAR: %d\n", sp->nvars);
 	    // FIXME: create name string array here
 	    sp->varname = (char **) malloc(nvars * sizeof(char *));
 	} else if ((arg = prefix(s, "No. Points:"))) {
@@ -452,9 +451,18 @@ SPICEDAT *read_header(FILE *fp)
 	    if (debug)
 		printf("header line    : %s", s);
 	    if (sscanf(s, "%d %s %s", &varnum, strbuf, strtype) == 3) {
-		if (debug)
-		    printf("%d %s %s\n", varnum, strbuf, strtype);
-		editname(strbuf);
+		if (debug) printf("%d %s %s\n", varnum, strbuf, strtype);
+
+		editname(strbuf); // FIXME
+
+		// edit independent variable names
+		if (varnum==0) {
+		  if (strcmp(strbuf, "time")==0) {
+		    strcpy(strbuf,"seconds");
+		    printf("%s\n", strbuf);
+		  }
+		}
+
 		sp->varname[varnum] = strsave(strbuf);
 	    } else {
 		printf("unparsed header line    : %s", arg);

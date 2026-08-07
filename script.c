@@ -132,7 +132,8 @@ int scriptfeed(char *msg) {
         return(0);
     }
 
-    if (fprintf(sendfp, "%s",msg) < 0) {
+    // if (fprintf(sendfp, "%s",msg) < 0) {
+    if (fwrite(msg, 1, strlen(msg), sendfp) < 0) {
         return(0);
     } else {
 	fflush(sendfp);
